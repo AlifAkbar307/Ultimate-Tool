@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Internal Tool Hub"
+version = "1.0.0"
+id = "artifacts/tool-hub"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18399
+
+[services.development]
+run = "pnpm --filter @workspace/tool-hub run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tool-hub", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/tool-hub/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18399"
+BASE_PATH = "/"
