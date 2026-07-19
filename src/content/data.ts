@@ -508,6 +508,7 @@ export const DOC_REFERENCES: DocReferenceCard[] = [
     category: "Proof of Acceptance",
     audience: "Student",
     title: "Proof of Acceptance — Student",
+    image: "/docs/loa-student.png",
     note: "Contoh: Letter of Acceptance (LoA) / admission letter. Bisa berupa email penerimaan resmi, selama kop terlihat dari alamat pengirim resmi kampus atau tanda tangan pihak kampus di isi email.",
     requirements: [
       {
