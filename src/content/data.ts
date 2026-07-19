@@ -439,3 +439,132 @@ https://docs.google.com/document/d/1P_7JfisnXipouE407Yt4UkApi3sz9dAu/edit`,
     ],
   },
 ];
+// ============================================================================
+// REFERENSI DOKUMEN (Tool "Contoh Dokumen")
+// ============================================================================
+//
+// Tempel blok ini di AKHIR src/content/data.ts (sebagai export baru).
+//
+// Konteks: barang pindahan butuh 2 dokumen pendukung —
+//   1. Proof of Acceptance  (kenapa customer datang + tanggal MULAI kegiatan)
+//   2. Proof of Completion   (bukti kegiatan SELESAI + tanggal BERAKHIR)
+// Kenapa dua-duanya wajib: acceptance memberi tanggal mulai, completion memberi
+// tanggal berakhir. Selisih keduanya harus >= 1 tahun (syarat skema pindahan).
+//
+// Tiap dokumen punya versi Worker & Student -> total 4 kartu, dikelompokkan
+// otomatis oleh komponen berdasarkan field `category`.
+//
+// CARA MAINTAIN: edit teks di sini. Nambah syarat = tambah objek ke requirements
+// (idealnya dengan pasangan implikasinya).
+// ----------------------------------------------------------------------------
+
+export interface DocRequirement {
+  syarat: string;    // teks singkat -> tampil di kartu (infografis, di-SS ke customer)
+  implikasi: string; // penjelasan "kenapa" -> ikut saat tombol Salin ditekan (untuk tim)
+}
+
+export interface DocReferenceCard {
+  id: string;
+  category: string;  // "Proof of Acceptance" / "Proof of Completion" (jadi judul section)
+  audience: string;  // "Worker" / "Student" (jadi badge di kartu)
+  title: string;
+  note?: string;     // catatan alternatif (email, tanggal TTD) -> tampil kecil di kartu
+  requirements: DocRequirement[];
+}
+
+// Aturan lintas-dokumen: ditampilkan menonjol sekali, bukan diulang per kartu.
+export const DOC_COMBINED_RULE =
+  "Selisih antara tanggal mulai (Proof of Acceptance) dan tanggal berakhir " +
+  "(Proof of Completion) harus minimal 1 tahun. Ini syarat utama skema barang " +
+  "pindahan — tanpa terpenuhi, barang tidak memenuhi kriteria walau kedua " +
+  "dokumen lengkap.";
+
+export const DOC_REFERENCES: DocReferenceCard[] = [
+  // ── PROOF OF ACCEPTANCE ────────────────────────────────────────────────────
+  {
+    id: "acceptance-worker",
+    category: "Proof of Acceptance",
+    audience: "Worker",
+    title: "Proof of Acceptance — Worker",
+    note: "Alternatif: bisa berupa email penerimaan resmi, selama kop terlihat dari alamat pengirim resmi instansi atau tanda tangan pengurus instansi di isi email.",
+    requirements: [
+      {
+        syarat: "Kop instansi (atau email resmi: kop terlihat dari pengirim / TTD pengurus)",
+        implikasi: "Menandakan dokumen resmi dari instansi. Tanpa ini, BC tidak dapat memverifikasi keaslian dan dokumen bisa dianggap tidak sah.",
+      },
+      {
+        syarat: "Tanggal mulai bekerja",
+        implikasi: "Titik awal penghitungan masa >= 1 tahun di luar negeri. Tanpa tanggal mulai, tidak bisa dibuktikan customer sudah >= 1 tahun di sana — syarat utama skema barang pindahan.",
+      },
+      {
+        syarat: "Nama sesuai passport & dokumen lain",
+        implikasi: "Mengikat dokumen ke customer. Jika nama tidak cocok dengan passport/CI-PL, BC tidak dapat memastikan dokumen ini milik customer.",
+      },
+    ],
+  },
+  {
+    id: "acceptance-student",
+    category: "Proof of Acceptance",
+    audience: "Student",
+    title: "Proof of Acceptance — Student",
+    note: "Contoh: Letter of Acceptance (LoA) / admission letter. Bisa berupa email penerimaan resmi, selama kop terlihat dari alamat pengirim resmi kampus atau tanda tangan pihak kampus di isi email.",
+    requirements: [
+      {
+        syarat: "Kop instansi (atau email resmi: kop terlihat dari pengirim / TTD pihak kampus)",
+        implikasi: "Menandakan dokumen resmi dari kampus. Tanpa ini, BC tidak dapat memverifikasi keaslian dan dokumen bisa dianggap tidak sah.",
+      },
+      {
+        syarat: "Tanggal mulai studi",
+        implikasi: "Titik awal penghitungan masa >= 1 tahun di luar negeri. Tanpa tanggal mulai, tidak bisa dibuktikan customer sudah >= 1 tahun di sana — syarat utama skema barang pindahan.",
+      },
+      {
+        syarat: "Nama sesuai passport & dokumen lain",
+        implikasi: "Mengikat dokumen ke customer. Jika nama tidak cocok dengan passport/CI-PL, BC tidak dapat memastikan dokumen ini milik customer.",
+      },
+    ],
+  },
+
+  // ── PROOF OF COMPLETION ────────────────────────────────────────────────────
+  {
+    id: "completion-worker",
+    category: "Proof of Completion",
+    audience: "Worker",
+    title: "Proof of Completion — Worker (Contract End)",
+    note: "Alternatif: bisa berupa email resmi, selama kop terlihat dari pengirim / TTD pengurus instansi. Jika tanggal berakhir tidak tertera, tanggal surat ditandatangani bisa menjadi alternatif.",
+    requirements: [
+      {
+        syarat: "Kop instansi (atau email resmi: kop terlihat dari pengirim / TTD pengurus)",
+        implikasi: "Menandakan dokumen resmi dari instansi. Tanpa ini, BC tidak dapat memverifikasi keaslian dokumen.",
+      },
+      {
+        syarat: "Tanggal berakhirnya kontrak (jika tidak ada: tanggal surat ditandatangani sebagai alternatif)",
+        implikasi: "Titik akhir penghitungan >= 1 tahun, DAN bukti kegiatan sudah selesai. Tanpa ini, BC mempertanyakan apakah customer benar sudah selesai dan pindah permanen — atau hanya sementara pergi dan berencana kembali. Ini yang bisa membuat barang tertahan atau memerlukan surat pernyataan.",
+      },
+      {
+        syarat: "Nama sesuai passport & dokumen lain",
+        implikasi: "Mengikat dokumen ke customer. Jika nama tidak cocok dengan passport/CI-PL, BC tidak dapat memastikan dokumen ini milik customer.",
+      },
+    ],
+  },
+  {
+    id: "completion-student",
+    category: "Proof of Completion",
+    audience: "Student",
+    title: "Proof of Completion — Student (Kelulusan)",
+    note: "Contoh: Ijazah, SKL, Completion Letter, Transcript. Bisa berupa email resmi, selama kop terlihat dari pengirim / TTD pihak kampus. Jika tanggal berakhir tidak tertera, tanggal surat ditandatangani bisa menjadi alternatif.",
+    requirements: [
+      {
+        syarat: "Kop instansi (atau email resmi: kop terlihat dari pengirim / TTD pihak kampus)",
+        implikasi: "Menandakan dokumen resmi dari kampus. Tanpa ini, BC tidak dapat memverifikasi keaslian dokumen.",
+      },
+      {
+        syarat: "Tanggal selesai studi (jika tidak ada: tanggal surat ditandatangani sebagai alternatif)",
+        implikasi: "Titik akhir penghitungan >= 1 tahun, DAN bukti studi sudah selesai. Tanpa ini, BC mempertanyakan apakah customer benar sudah selesai dan pindah permanen — atau hanya sementara pergi dan berencana kembali. Ini yang bisa membuat barang tertahan atau memerlukan surat pernyataan.",
+      },
+      {
+        syarat: "Nama sesuai passport & dokumen lain",
+        implikasi: "Mengikat dokumen ke customer. Jika nama tidak cocok dengan passport/CI-PL, BC tidak dapat memastikan dokumen ini milik customer.",
+      },
+    ],
+  },
+];
