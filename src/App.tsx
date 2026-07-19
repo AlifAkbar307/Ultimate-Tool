@@ -19,6 +19,7 @@ import { ToolPage } from './pages/ToolPage';
 import { EligibilityChecker } from './pages/EligibilityChecker';
 import { QuoteParser } from './pages/QuoteParser';
 import { JiraHelper } from './pages/JiraHelper';
+import { ContohDokumen } from './pages/ContohDokumen';
 import { navItems } from './content/data';
 import React from 'react';
 
@@ -30,7 +31,9 @@ const TOOL_COMPONENTS: Record<string, React.ReactElement> = {
   'jira-helper': <JiraHelper />,
   'eligibility-checker': <EligibilityChecker />,
   'quote-parser': <QuoteParser />,
+  'contoh-dokumen': <ContohDokumen />,
 };
+
 
 const queryClient = new QueryClient();
 
