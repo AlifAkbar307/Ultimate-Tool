@@ -402,4 +402,40 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
       },
     ],
   },
+  {
+    id: "surat-pernyataan",
+    name: "Surat Pernyataan (Template)",
+    snippets: [
+      {
+        id: "sp-gap-kegiatan",
+        title: "Surat Pernyataan — Gap Kegiatan",
+        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+https://docs.google.com/document/d/10gjOnVi9pKtXKRotceGvfRsDfgvYaREX/edit`,
+      },
+      {
+        id: "sp-barang-penumpang",
+        title: "Surat Pernyataan — Barang Penumpang",
+        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+https://docs.google.com/document/d/1F2X-fvj62-u5FXMR6ZRLvPvadImqvvPi/edit`,
+      },
+      {
+        id: "sp-hilang-ecd",
+        title: "Surat Pernyataan — Hilang ECD / Boarding / Arrival Stamp",
+        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+https://docs.google.com/document/d/1mwfVllcA6r7d8OtBjtk59Ri4vA_x6v5x/edit`,
+      },
+      {
+        id: "sp-belum-selesai",
+        title: "Surat Pernyataan — Belum Selesai Kegiatan",
+        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+https://docs.google.com/document/d/1d7rVOadu9841ds9JLufz3-GMMCDB5k_s/edit`,
+      },
+      {
+        id: "sp-value-kecil",
+        title: "Surat Pernyataan — Value Terlalu Kecil",
+        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+https://docs.google.com/document/d/1P_7JfisnXipouE407Yt4UkApi3sz9dAu/edit`,
+      },
+    ],
+  },
 ];
