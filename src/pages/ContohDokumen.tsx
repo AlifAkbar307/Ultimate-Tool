@@ -52,19 +52,23 @@ function CheckIcon() {
   );
 }
 
-// Slot gambar: tampilkan <img> jika ada path, selain itu placeholder dashed.
+// GANTI fungsi ImageSlot yang lama di ContohDokumen.tsx dengan versi ini.
+// Perubahan: slot jadi LANDSCAPE dengan aspect-ratio 3:2 terkunci (600x400px ideal),
+// cocok untuk menampilkan "belahan atas surat" (kop + judul + tanggal).
+// Semua kartu jadi seragam karena rasio dikunci — gambar apa pun di-fit ke 3:2.
+
 function ImageSlot({ image, title }: { image?: string; title: string }) {
   if (image) {
     return (
       <img
         src={image}
         alt={`Contoh ${title}`}
-        className="w-full md:w-52 shrink-0 rounded-lg object-cover border border-[#1e1e1e]/10"
+        className="w-full md:w-64 shrink-0 rounded-lg object-cover border border-[#1e1e1e]/10 aspect-[3/2]"
       />
     );
   }
   return (
-    <div className="w-full md:w-52 shrink-0 min-h-[180px] rounded-lg border-2 border-dashed border-[#1e1e1e]/20 flex items-center justify-center text-center px-4">
+    <div className="w-full md:w-64 shrink-0 aspect-[3/2] rounded-lg border-2 border-dashed border-[#1e1e1e]/20 flex items-center justify-center text-center px-4">
       <span className="text-xs text-[#1e1e1e]/35 leading-snug">
         Contoh gambar
         <br />
