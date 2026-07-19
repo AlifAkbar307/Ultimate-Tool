@@ -469,6 +469,7 @@ export interface DocReferenceCard {
   audience: string;  // "Worker" / "Student" (jadi badge di kartu)
   title: string;
   note?: string;     // catatan alternatif (email, tanggal TTD) -> tampil kecil di kartu
+  image?: string;
   requirements: DocRequirement[];
 }
 
