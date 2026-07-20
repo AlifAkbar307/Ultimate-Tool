@@ -487,6 +487,7 @@ export const DOC_REFERENCES: DocReferenceCard[] = [
     category: "Proof of Acceptance",
     audience: "Worker",
     title: "Proof of Acceptance — Worker",
+    image: "/docs/loa-worker.png",
     note: "Alternatif: bisa berupa email penerimaan resmi, selama kop terlihat dari alamat pengirim resmi instansi atau tanda tangan pengurus instansi di isi email.",
     requirements: [
       {
@@ -532,6 +533,7 @@ export const DOC_REFERENCES: DocReferenceCard[] = [
     category: "Proof of Completion",
     audience: "Worker",
     title: "Proof of Completion — Worker (Contract End)",
+    image: "/docs/end-worker.png",
     note: "Alternatif: bisa berupa email resmi, selama kop terlihat dari pengirim / TTD pengurus instansi. Jika tanggal berakhir tidak tertera, tanggal surat ditandatangani bisa menjadi alternatif.",
     requirements: [
       {
@@ -553,6 +555,7 @@ export const DOC_REFERENCES: DocReferenceCard[] = [
     category: "Proof of Completion",
     audience: "Student",
     title: "Proof of Completion — Student (Kelulusan)",
+    image: "/docs/end-student.png",
     note: "Contoh: Ijazah, SKL, Completion Letter, Transcript. Bisa berupa email resmi, selama kop terlihat dari pengirim / TTD pihak kampus. Jika tanggal berakhir tidak tertera, tanggal surat ditandatangani bisa menjadi alternatif.",
     requirements: [
       {
