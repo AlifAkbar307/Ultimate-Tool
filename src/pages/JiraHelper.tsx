@@ -166,6 +166,16 @@ function ChecklistCopyButton({
   );
 }
 
+// GANTI fungsi ChecklistSection yang lama di JiraHelper.tsx dengan versi ini.
+// Perubahan: ditambah section "Folder Tempat Copy File Quotations" di bawah
+// daftar tabel checklist — satu tombol yang MEMBUKA folder Drive di tab baru
+// (bukan tombol salin; tim buka folder lalu Ctrl+C file di dalamnya seperti biasa).
+//
+// Untuk mengganti link folder nanti: ubah URL di konstanta QUOTATIONS_FOLDER_URL.
+
+const QUOTATIONS_FOLDER_URL =
+  "https://drive.google.com/drive/folders/1pD9YLvatlvZJvaUYdS8CFzLQKt7H3PP7";
+
 /** SECTION 1 — Tabel Checklist. */
 function ChecklistSection() {
   const [checkerName, setCheckerName] = useState(CHECKER_DEFAULT);
@@ -197,6 +207,28 @@ function ChecklistSection() {
             />
           </div>
         ))}
+      </div>
+
+      {/* ── Folder Tempat Copy File Quotations ─────────────────────────────── */}
+      {/* Tombol membuka folder Drive di tab baru. Tim lalu Ctrl+C file di sana. */}
+      <div className="mt-8">
+        <h2 className="text-sm font-bold text-[#1e1e1e] mb-3">
+          Folder Tempat Copy File Quotations
+        </h2>
+        <div className="rounded-xl border border-[#1e1e1e]/10 bg-white flex items-center justify-between gap-4 px-4 py-3">
+          <span className="text-sm text-[#1e1e1e]/60 leading-snug">
+            Buka folder Drive lalu salin (Ctrl+C) template quotation yang dibutuhkan.
+          </span>
+          <a
+            href={QUOTATIONS_FOLDER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="button-open-quotations-folder"
+            className="h-8 px-3 rounded-md text-xs font-semibold border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] hover:bg-[#1e1e1e]/[0.03] transition-colors whitespace-nowrap flex items-center"
+          >
+            Buka Folder
+          </a>
+        </div>
       </div>
     </div>
   );
