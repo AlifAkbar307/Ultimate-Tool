@@ -252,9 +252,9 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
         id: "sp3bp-opsi-early",
         title: "Opsi untuk pengiriman lebih awal (tanpa alasan kuat)",
         body: `Berhubung customer tidak memiliki alasan yang kuat untuk mengirimkan lebih early mohon ditanyakan ke customer terkait opsi berikut:
-○ Barang dapat dikirimkan lebih awal namun konsekuensinya barangnya stuck di warehouse FedEx hingga customer sampai ke Indonesia karena BC require dokumen Boarding pass / ECD. Yang mana biaya warehouse FedEx itu IDR 2000/kg/hari.
-○ Memundurkan tanggal pickup h-6 sebelum tanggal customer sampai di Indonesia
-○ Memprovide alasan yang lebih kuat terkait pengiriman yang lebih awal sehingga tidak bisa melampirkan boarding pass secara langsung`,
+- Barang dapat dikirimkan lebih awal namun konsekuensinya barangnya stuck di warehouse FedEx hingga customer sampai ke Indonesia karena BC require dokumen Boarding pass / ECD. Yang mana biaya warehouse FedEx itu IDR 2000/kg/hari.
+- Memundurkan tanggal pickup h-6 sebelum tanggal customer sampai di Indonesia
+- Memprovide alasan yang lebih kuat terkait pengiriman yang lebih awal sehingga tidak bisa melampirkan boarding pass secara langsung`,
       },
       {
         id: "reminder-ecd",
@@ -352,7 +352,7 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
       {
         id: "dropoff-lewat-jam",
         title: "Drop off jika lewat jam pickup",
-        body: `Mohon dihimbau kepada customer untuk drop off barang apabila sudah melewati jam pick up ({jam} waktu {negara}). Berikut alamat dropoff terdekat:
+        body: `Mohon dihimbau kepada customer untuk drop off barang apabila sudah melewati jam pick up. Berikut alamat dropoff terdekat:
 {alamat}`,
       },
     ],
@@ -376,7 +376,7 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
       {
         id: "deskripsi-barang-spesifik",
         title: "Minta deskripsi barang lebih spesifik",
-        body: `Mohon untuk menyebutkan barang secara spesifik pada barang "{deskripsi barang}" di box {nomor}. Contoh : 2 pcs pants, 2 pcs jeans. Jika jenis barangnya sama maka penyebutan dengan 4 pcs pants saja dan tidak perlu menggunakan garis miring ya.`,
+        body: `Mohon untuk menyebutkan barang secara spesifik pada barang "XXX" di box XX. Contoh : 2 pcs pants, 2 pcs jeans. Jika jenis barangnya sama maka penyebutan dengan 4 pcs pants saja dan tidak perlu menggunakan garis miring ya.`,
       },
       {
         id: "barang-baru-pajak",
@@ -393,7 +393,7 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
       {
         id: "kode-alamat",
         title: "Tanya arti kode pada alamat pengirim",
-        body: `Pada alamat pengirim tertera "{kode}", mohon ditanyakan ke customer maksud angka tersebut apa?`,
+        body: `Pada alamat pengirim tertera "XXX", mohon ditanyakan ke customer maksud angka tersebut apa?`,
       },
       {
         id: "kode-koper",
@@ -409,31 +409,35 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
       {
         id: "sp-gap-kegiatan",
         title: "Surat Pernyataan — Gap Kegiatan",
-        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+        body: `Berhubung terdapat gap antara kegiatan customer dengan tanggal kepulangan (± XX bulan) dan customer tidak memiliki dokumen pendukung untuk menjelaskan periode tersebut, mohon arahkan customer untuk mengisi Surat Pernyataan berikut:
 https://docs.google.com/document/d/10gjOnVi9pKtXKRotceGvfRsDfgvYaREX/edit`,
       },
       {
         id: "sp-barang-penumpang",
         title: "Surat Pernyataan — Barang Penumpang",
-        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+        body: `Berhubung value barang yang relatif kecil dan dengan jumlah item dan berat yang cukup banyak, mohon dibantu untuk mengisi statement letter berikut, sembari menyertakan bukti tinggal. Berikut link dokumen template surat pernyataannya:
 https://docs.google.com/document/d/1F2X-fvj62-u5FXMR6ZRLvPvadImqvvPi/edit`,
       },
       {
         id: "sp-hilang-ecd",
         title: "Surat Pernyataan — Hilang ECD / Boarding / Arrival Stamp",
-        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+        body: `Berhubung customer tidak memiliki ECD waktu kepulangan, Tolong arahin customer gini:
+1. Bikin ECD baru dengan tanggal yang tidak sesuai dengan tangggal kedatangan
+2. Lalu mohon didampingi dengan statement letter berikut yang menjelaskan kronologi secara full tentang mengapa ECD yang ada tanggalnya tidak sesuai.
 https://docs.google.com/document/d/1mwfVllcA6r7d8OtBjtk59Ri4vA_x6v5x/edit`,
       },
       {
         id: "sp-belum-selesai",
         title: "Surat Pernyataan — Belum Selesai Kegiatan",
-        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+        body: `Berhubung customer belum dapat melampirkan dokumen yang menunjukkan bahwa studi telah selesai, mohon untuk membuat Surat Pernyataan yang menjelaskan bahwa customer telah menyelesaikan studi di XXX dan akan mengikuti wisuda pada XXX.
+
+Apabila memungkinkan, mohon lampirkan juga dokumen pendukung lain yang dapat memperkuat pernyataan tersebut.
 https://docs.google.com/document/d/1d7rVOadu9841ds9JLufz3-GMMCDB5k_s/edit`,
       },
       {
         id: "sp-value-kecil",
         title: "Surat Pernyataan — Value Terlalu Kecil",
-        body: `Mohon dibantu isi surat pernyataan berikut (silakan buka, lalu File > Download > Word untuk mengisi):
+        body: `Berhubung customer mencantumkan nilai barang sebesar 0 pada SKP, mohon arahkan customer untuk mengisi Surat Pernyataan berikut:
 https://docs.google.com/document/d/1P_7JfisnXipouE407Yt4UkApi3sz9dAu/edit`,
       },
     ],
