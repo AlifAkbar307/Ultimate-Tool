@@ -17,11 +17,12 @@ import {
   ChecklistTable,
 } from "../content/data";
 
-type SubTab = "checklist" | "snippets";
-
+type SubTab = "checklist" | "snippets" | "quotes";
+import { QUOTE_SNIPPETS, type QuoteSnippet } from "../content/data";
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "checklist", label: "Tabel Checklist" },
   { id: "snippets", label: "Snippet Komentar" },
+  { id: "quotes", label: "Quote Snippet" },
 ];
 
 /**
@@ -300,7 +301,173 @@ function SnippetSection() {
     </div>
   );
 }
+/**
+ * QuoteSnippetSection — mode "Quote Snippet" di Jira Helper.
+ * Taruh fungsi ini DI DALAM file JiraHelper.tsx (bersama ChecklistSection &
+ * SnippetSection), lalu render saat viewMode === "quotes". Lihat wiring di bawah.
+ *
+ * Import tambahan yang dibutuhkan di atas JiraHelper.tsx:
+ *   import { QUOTE_SNIPPETS, type QuoteSnippet } from "../content/data";
+ *   (useState & motion sudah ada di file itu)
+ */
 
+// Format angka gaya Indonesia (titik ribuan, koma desimal)
+function fmtID(n: number): string {
+  return n.toLocaleString("id-ID", { maximumFractionDigits: 2 });
+}
+
+// Ganti semua kemunculan (tanpa regex, aman dari karakter khusus)
+function replaceAll(s: string, find: string, val: string): string {
+  return s.split(find).join(val);
+}
+
+function fillQuote(
+  snippet: QuoteSnippet,
+  namaLengkap: string,
+  dims: { nobox: string; p: string; l: string; t: string; berat: string },
+): string {
+  let text = snippet.body;
+
+  if (snippet.fields.includes("nama")) {
+    const full = namaLengkap.trim();
+    const first = full.split(/\s+/)[0] || "";
+    text = replaceAll(text, "{NamaLengkap}", full);
+    text = replaceAll(text, "{nama}", first);
+  }
+
+  if (snippet.fields.includes("p")) {
+    text = replaceAll(text, "{nobox}", dims.nobox);
+    text = replaceAll(text, "{p}", dims.p);
+    text = replaceAll(text, "{l}", dims.l);
+    text = replaceAll(text, "{t}", dims.t);
+    text = replaceAll(text, "{berat}", dims.berat);
+
+    const p = parseFloat(dims.p);
+    const l = parseFloat(dims.l);
+    const t = parseFloat(dims.t);
+    if (!isNaN(p) && !isNaN(l) && !isNaN(t)) {
+      const volume = p * l * t;
+      const volumetric = volume / 5000;
+      const roundup = Math.ceil(volumetric);
+      text = replaceAll(text, "{volume}", fmtID(volume));
+      text = replaceAll(text, "{volumetric}", fmtID(volumetric));
+      text = replaceAll(text, "{volumetrikroundup}", String(roundup));
+    }
+  }
+
+  return text;
+}
+
+function QuoteCard({
+  snippet,
+  namaLengkap,
+}: {
+  snippet: QuoteSnippet;
+  namaLengkap: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [dims, setDims] = useState({ nobox: "", p: "", l: "", t: "", berat: "" });
+
+  const hasDims = snippet.fields.includes("p");
+
+  // Peringatan: snippet volumetrik mengasumsikan volumetrik > berat aktual.
+  const p = parseFloat(dims.p), l = parseFloat(dims.l), t = parseFloat(dims.t);
+  const berat = parseFloat(dims.berat);
+  let warn = "";
+  if (hasDims && !isNaN(p) && !isNaN(l) && !isNaN(t) && !isNaN(berat)) {
+    const roundup = Math.ceil((p * l * t) / 5000);
+    if (berat >= roundup) {
+      warn = `Berat aktual (${dims.berat}) ≥ volumetrik (${roundup}). Snippet ini untuk kasus volumetrik LEBIH BESAR — teks bisa keliru.`;
+    }
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(fillQuote(snippet, namaLengkap, dims));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* non-HTTPS: abaikan */
+    }
+  }
+
+  const input =
+    "px-2 py-1 rounded-md border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20";
+
+  return (
+    <div className="rounded-xl border border-[#1e1e1e]/10 bg-white p-4">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <span className="text-sm font-semibold text-[#1e1e1e]">{snippet.title}</span>
+        <button
+          onClick={handleCopy}
+          data-testid={`copy-quote-${snippet.id}`}
+          className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#1e1e1e]/15 transition-colors"
+          style={{ backgroundColor: copied ? "#c1ff00" : "transparent", color: "#1e1e1e" }}
+        >
+          {copied ? "Tersalin ✓" : "Salin"}
+        </button>
+      </div>
+
+      {/* Input dimensi (hanya untuk snippet volumetrik) */}
+      {hasDims && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          <input className={`${input} w-20`} placeholder="No. box" value={dims.nobox}
+            onChange={(e) => setDims({ ...dims, nobox: e.target.value })} />
+          <input className={`${input} w-16`} placeholder="P" value={dims.p}
+            onChange={(e) => setDims({ ...dims, p: e.target.value })} />
+          <input className={`${input} w-16`} placeholder="L" value={dims.l}
+            onChange={(e) => setDims({ ...dims, l: e.target.value })} />
+          <input className={`${input} w-16`} placeholder="T" value={dims.t}
+            onChange={(e) => setDims({ ...dims, t: e.target.value })} />
+          <input className={`${input} w-24`} placeholder="Berat akt." value={dims.berat}
+            onChange={(e) => setDims({ ...dims, berat: e.target.value })} />
+        </div>
+      )}
+
+      {warn && (
+        <p className="text-xs text-[#dc2626] leading-snug mb-2">{warn}</p>
+      )}
+
+      {/* Preview teks final */}
+      <pre className="text-xs text-[#1e1e1e]/60 leading-snug whitespace-pre-wrap font-sans mt-1">
+        {fillQuote(snippet, namaLengkap, dims)}
+      </pre>
+    </div>
+  );
+}
+
+function QuoteSnippetSection() {
+  const [namaLengkap, setNamaLengkap] = useState("");
+
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-[#1e1e1e] mb-2">
+        Nama Lengkap Customer
+      </label>
+      <input
+        type="text"
+        value={namaLengkap}
+        onChange={(e) => setNamaLengkap(e.target.value)}
+        placeholder="mis. Annisa Putri"
+        data-testid="input-nama-customer"
+        className="w-full max-w-xs px-3 py-2 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20 mb-6"
+      />
+
+      <div className="space-y-8">
+        {QUOTE_SNIPPETS.map((group) => (
+          <div key={group.id}>
+            <h3 className="text-sm font-bold text-[#1e1e1e] mb-3">{group.name}</h3>
+            <div className="space-y-3">
+              {group.snippets.map((s) => (
+                <QuoteCard key={s.id} snippet={s} namaLengkap={namaLengkap} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 export function JiraHelper() {
   const [subTab, setSubTab] = useState<SubTab>("checklist");
 
@@ -344,7 +511,9 @@ export function JiraHelper() {
         ))}
       </div>
 
-      {subTab === "checklist" ? <ChecklistSection /> : <SnippetSection />}
+      {subTab === "checklist" && <ChecklistSection />}
+      {subTab === "snippets" && <SnippetSection />}
+      {subTab === "quotes" && <QuoteSnippetSection />}
     </div>
   );
 }
