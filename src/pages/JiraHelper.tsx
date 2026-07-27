@@ -364,22 +364,24 @@ function CurrencyConverter() {
         </div>
       </div>
  
-      {/* Hasil */}
-      <div className="mt-4 min-h-[2rem]">
+      {/* Hasil — dalam section tersendiri */}
+      <div className="mt-4 rounded-xl bg-[#f2f2f2] px-4 py-5 min-h-[4.5rem] flex items-center">
         {loading && <p className="text-sm text-[#1e1e1e]/50">Mengambil kurs…</p>}
         {error && <p className="text-sm text-[#dc2626]">{error}</p>}
         {!loading && !error && result !== null && (
-          <div>
-            <p className="text-lg font-bold text-[#1e1e1e]">
-              {fmtID(result)} {to}
-            </p>
-            <p className="text-xs text-[#1e1e1e]/50 mt-0.5">
-              1 {from} = {fmtID(rate!, 4)} {to}
-              {data?.date ? ` · per ${data.date}` : ""}
-            </p>
-          </div>
+          <p className="text-2xl font-bold text-[#1e1e1e]">
+            {fmtID(result)} {to}
+          </p>
         )}
       </div>
+ 
+      {/* Info kurs — di luar section hasil */}
+      {!loading && !error && result !== null && (
+        <p className="text-xs text-[#1e1e1e]/50 mt-2">
+          1 {from} = {fmtID(rate!, 4)} {to}
+          {data?.date ? ` · per ${data.date}` : ""}
+        </p>
+      )}
  
       {/* Disclaimer — jaga dari salah pakai untuk nilai pabean */}
       <p className="text-xs text-[#1e1e1e]/40 mt-3 pt-3 border-t border-[#1e1e1e]/5 leading-snug">
