@@ -701,3 +701,64 @@ Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
     ],
   },
 ];
+
+// ============================================================================
+// CURRENCY LIST (Currency Converter)
+// Tempel di AKHIR src/content/data.ts.
+// EUR, USD, IDR diprioritaskan di atas; sisanya alfabetis.
+// Nambah/hapus mata uang = edit array ini (kode harus huruf besar, sesuai ISO).
+// ============================================================================
+
+export interface CurrencyOption {
+  code: string; // ISO 4217, mis. "EUR"
+  name: string;
+}
+
+export const CURRENCY_LIST: CurrencyOption[] = [
+  { code: "EUR", name: "Euro" },
+  { code: "USD", name: "US Dollar" },
+  { code: "IDR", name: "Indonesian Rupiah" },
+  { code: "AED", name: "UAE Dirham" },
+  { code: "ALL", name: "Albanian Lek" },
+  { code: "AMD", name: "Armenian Dram" },
+  { code: "AUD", name: "Australian Dollar" },
+  { code: "AZN", name: "Azerbaijani Manat" },
+  { code: "BAM", name: "Bosnia-Herzegovina Mark" },
+  { code: "BGN", name: "Bulgarian Lev" },
+  { code: "BND", name: "Brunei Dollar" },
+  { code: "BRL", name: "Brazilian Real" },
+  { code: "BYN", name: "Belarusian Ruble" },
+  { code: "CAD", name: "Canadian Dollar" },
+  { code: "CHF", name: "Swiss Franc" },
+  { code: "CNY", name: "Chinese Yuan" },
+  { code: "CZK", name: "Czech Koruna" },
+  { code: "DKK", name: "Danish Krone" },
+  { code: "GBP", name: "British Pound" },
+  { code: "GEL", name: "Georgian Lari" },
+  { code: "HUF", name: "Hungarian Forint" },
+  { code: "INR", name: "Indian Rupee" },
+  { code: "ISK", name: "Icelandic Krona" },
+  { code: "JPY", name: "Japanese Yen" },
+  { code: "KHR", name: "Cambodian Riel" },
+  { code: "KRW", name: "South Korean Won" },
+  { code: "KZT", name: "Kazakhstani Tenge" },
+  { code: "LAK", name: "Lao Kip" },
+  { code: "MDL", name: "Moldovan Leu" },
+  { code: "MKD", name: "Macedonian Denar" },
+  { code: "MMK", name: "Myanmar Kyat" },
+  { code: "MXN", name: "Mexican Peso" },
+  { code: "MYR", name: "Malaysian Ringgit" },
+  { code: "NOK", name: "Norwegian Krone" },
+  { code: "NZD", name: "New Zealand Dollar" },
+  { code: "PHP", name: "Philippine Peso" },
+  { code: "PLN", name: "Polish Zloty" },
+  { code: "RON", name: "Romanian Leu" },
+  { code: "RSD", name: "Serbian Dinar" },
+  { code: "RUB", name: "Russian Ruble" },
+  { code: "SEK", name: "Swedish Krona" },
+  { code: "SGD", name: "Singapore Dollar" },
+  { code: "THB", name: "Thai Baht" },
+  { code: "TRY", name: "Turkish Lira" },
+  { code: "UAH", name: "Ukrainian Hryvnia" },
+  { code: "VND", name: "Vietnamese Dong" },
+];
