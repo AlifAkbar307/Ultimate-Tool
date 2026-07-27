@@ -69,7 +69,7 @@ function buildTableHtml(table: ChecklistTable, checkerName: string): string {
     .join("");
 
   return (
-    `<p>${escapeHtml(table.jiraTitle)}</p>` +
+    `<p><strong>${escapeHtml(table.jiraTitle)}</strong></p>` +
     `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`
   );
 }
