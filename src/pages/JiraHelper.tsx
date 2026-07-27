@@ -8,7 +8,7 @@
  * ============================================================
  */
 
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   CHECKLIST_TABLES,
@@ -19,6 +19,7 @@ import {
 
 type SubTab = "checklist" | "snippets" | "quotes";
 import { QUOTE_SNIPPETS, type QuoteSnippet } from "../content/data";
+import { CURRENCY_LIST, type CurrencyOption } from "../content/data";
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "checklist", label: "Tabel Checklist" },
   { id: "snippets", label: "Snippet Komentar" },
@@ -230,7 +231,161 @@ function ChecklistSection() {
             Buka Folder
           </a>
         </div>
+        {/* Currency Converter */}
+      <div className="mt-8">
+        <CurrencyConverter />
       </div>
+      </div>
+    </div>
+  );
+}
+
+interface RateData {
+  date: string;
+  rates: Record<string, number>; // key = kode mata uang huruf kecil
+}
+ 
+// Ambil kurs untuk satu base currency. Coba CDN utama, lalu fallback.
+async function fetchRates(base: string): Promise<RateData> {
+  const b = base.toLowerCase();
+  const urls = [
+    `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${b}.json`,
+    `https://latest.currency-api.pages.dev/v1/currencies/${b}.json`,
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data[b]) return { date: data.date, rates: data[b] };
+    } catch {
+      /* coba url berikutnya */
+    }
+  }
+  throw new Error("Gagal mengambil kurs. Coba lagi nanti.");
+}
+ 
+function fmtID(n: number, maxFrac = 2): string {
+  return n.toLocaleString("id-ID", { maximumFractionDigits: maxFrac });
+}
+ 
+function CurrencyConverter() {
+  const [amount, setAmount] = useState("1");
+  const [from, setFrom] = useState("EUR");
+  const [to, setTo] = useState("IDR");
+ 
+  // cache kurs per base currency supaya ganti "to" tidak fetch ulang
+  const [cache, setCache] = useState<Record<string, RateData>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+ 
+  // Fetch saat "from" berubah & belum ada di cache
+  useEffect(() => {
+    let cancelled = false;
+    if (cache[from]) return;
+    setLoading(true);
+    setError("");
+    fetchRates(from)
+      .then((data) => {
+        if (!cancelled) setCache((c) => ({ ...c, [from]: data }));
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [from, cache]);
+ 
+  const data = cache[from];
+  const rate = data?.rates[to.toLowerCase()];
+  const amt = parseFloat(amount);
+  const result = rate !== undefined && !isNaN(amt) ? amt * rate : null;
+ 
+  const swap = () => {
+    setFrom(to);
+    setTo(from);
+  };
+ 
+  const selectClass =
+    "px-2 py-2 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20";
+ 
+  return (
+    <div className="rounded-xl border border-[#1e1e1e]/10 bg-white p-4">
+      <h3 className="text-sm font-bold text-[#1e1e1e] mb-3">Currency Converter</h3>
+ 
+      <div className="flex flex-wrap items-end gap-2">
+        {/* Jumlah */}
+        <div className="flex flex-col">
+          <label className="text-xs text-[#1e1e1e]/50 mb-1">Jumlah</label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            data-testid="currency-amount"
+            className="w-28 px-2 py-2 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
+          />
+        </div>
+ 
+        {/* Dari */}
+        <div className="flex flex-col">
+          <label className="text-xs text-[#1e1e1e]/50 mb-1">Dari</label>
+          <select value={from} onChange={(e) => setFrom(e.target.value)}
+            data-testid="currency-from" className={selectClass}>
+            {CURRENCY_LIST.map((c) => (
+              <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
+            ))}
+          </select>
+        </div>
+ 
+        {/* Tukar */}
+        <button
+          type="button"
+          onClick={swap}
+          data-testid="currency-swap"
+          className="px-3 py-2 rounded-lg border border-[#1e1e1e]/15 text-[#1e1e1e] text-sm hover:bg-[#1e1e1e]/[0.03] transition-colors"
+          title="Tukar arah"
+        >
+          ⇄
+        </button>
+ 
+        {/* Ke */}
+        <div className="flex flex-col">
+          <label className="text-xs text-[#1e1e1e]/50 mb-1">Ke</label>
+          <select value={to} onChange={(e) => setTo(e.target.value)}
+            data-testid="currency-to" className={selectClass}>
+            {CURRENCY_LIST.map((c) => (
+              <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+ 
+      {/* Hasil */}
+      <div className="mt-4 min-h-[2rem]">
+        {loading && <p className="text-sm text-[#1e1e1e]/50">Mengambil kurs…</p>}
+        {error && <p className="text-sm text-[#dc2626]">{error}</p>}
+        {!loading && !error && result !== null && (
+          <div>
+            <p className="text-lg font-bold text-[#1e1e1e]">
+              {fmtID(result)} {to}
+            </p>
+            <p className="text-xs text-[#1e1e1e]/50 mt-0.5">
+              1 {from} = {fmtID(rate!, 4)} {to}
+              {data?.date ? ` · per ${data.date}` : ""}
+            </p>
+          </div>
+        )}
+      </div>
+ 
+      {/* Disclaimer — jaga dari salah pakai untuk nilai pabean */}
+      <p className="text-xs text-[#1e1e1e]/40 mt-3 pt-3 border-t border-[#1e1e1e]/5 leading-snug">
+        Estimasi kurs pasar harian — <span className="font-semibold">bukan kurs Bea Cukai (KMK)</span>.
+        Untuk perhitungan pabean, gunakan kurs resmi yang berlaku.
+      </p>
     </div>
   );
 }
