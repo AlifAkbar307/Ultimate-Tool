@@ -714,51 +714,29 @@ export interface CurrencyOption {
   name: string;
 }
 
+// GANTI array CURRENCY_LIST di data.ts dengan versi ini (15 mata uang).
+// EUR/USD/IDR di atas; sisanya dikelompokkan per region lewat komentar.
+// Nambah lagi nanti = tinggal tambah { code, name } — kode ISO huruf besar.
+
 export const CURRENCY_LIST: CurrencyOption[] = [
   { code: "EUR", name: "Euro" },
   { code: "USD", name: "US Dollar" },
   { code: "IDR", name: "Indonesian Rupiah" },
-  { code: "AED", name: "UAE Dirham" },
-  { code: "ALL", name: "Albanian Lek" },
-  { code: "AMD", name: "Armenian Dram" },
-  { code: "AUD", name: "Australian Dollar" },
-  { code: "AZN", name: "Azerbaijani Manat" },
-  { code: "BAM", name: "Bosnia-Herzegovina Mark" },
-  { code: "BGN", name: "Bulgarian Lev" },
-  { code: "BND", name: "Brunei Dollar" },
-  { code: "BRL", name: "Brazilian Real" },
-  { code: "BYN", name: "Belarusian Ruble" },
+  // Amerika
   { code: "CAD", name: "Canadian Dollar" },
-  { code: "CHF", name: "Swiss Franc" },
-  { code: "CNY", name: "Chinese Yuan" },
-  { code: "CZK", name: "Czech Koruna" },
-  { code: "DKK", name: "Danish Krone" },
+  // Eropa
   { code: "GBP", name: "British Pound" },
-  { code: "GEL", name: "Georgian Lari" },
-  { code: "HUF", name: "Hungarian Forint" },
-  { code: "INR", name: "Indian Rupee" },
-  { code: "ISK", name: "Icelandic Krona" },
-  { code: "JPY", name: "Japanese Yen" },
-  { code: "KHR", name: "Cambodian Riel" },
-  { code: "KRW", name: "South Korean Won" },
-  { code: "KZT", name: "Kazakhstani Tenge" },
-  { code: "LAK", name: "Lao Kip" },
-  { code: "MDL", name: "Moldovan Leu" },
-  { code: "MKD", name: "Macedonian Denar" },
-  { code: "MMK", name: "Myanmar Kyat" },
-  { code: "MXN", name: "Mexican Peso" },
-  { code: "MYR", name: "Malaysian Ringgit" },
-  { code: "NOK", name: "Norwegian Krone" },
-  { code: "NZD", name: "New Zealand Dollar" },
-  { code: "PHP", name: "Philippine Peso" },
-  { code: "PLN", name: "Polish Zloty" },
-  { code: "RON", name: "Romanian Leu" },
-  { code: "RSD", name: "Serbian Dinar" },
-  { code: "RUB", name: "Russian Ruble" },
   { code: "SEK", name: "Swedish Krona" },
+  { code: "CHF", name: "Swiss Franc" },
+  // Asia
+  { code: "JPY", name: "Japanese Yen" },
   { code: "SGD", name: "Singapore Dollar" },
+  { code: "MYR", name: "Malaysian Ringgit" },
   { code: "THB", name: "Thai Baht" },
-  { code: "TRY", name: "Turkish Lira" },
-  { code: "UAH", name: "Ukrainian Hryvnia" },
+  { code: "CNY", name: "Chinese Yuan" },
+  { code: "KRW", name: "South Korean Won" },
+  { code: "PHP", name: "Philippine Peso" },
   { code: "VND", name: "Vietnamese Dong" },
+  // Australia
+  { code: "AUD", name: "Australian Dollar" },
 ];
