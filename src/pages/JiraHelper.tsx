@@ -466,11 +466,6 @@ function SnippetSection() {
  *   (useState & motion sudah ada di file itu)
  */
 
-// Format angka gaya Indonesia (titik ribuan, koma desimal)
-function fmtID(n: number): string {
-  return n.toLocaleString("id-ID", { maximumFractionDigits: 2 });
-}
-
 // Ganti semua kemunculan (tanpa regex, aman dari karakter khusus)
 function replaceAll(s: string, find: string, val: string): string {
   return s.split(find).join(val);
