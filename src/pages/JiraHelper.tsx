@@ -273,6 +273,7 @@ function CurrencyConverter() {
   const [amount, setAmount] = useState("1");
   const [from, setFrom] = useState("EUR");
   const [to, setTo] = useState("IDR");
+  const [copied, setCopied] = useState(false);
  
   // cache kurs per base currency supaya ganti "to" tidak fetch ulang
   const [cache, setCache] = useState<Record<string, RateData>>({});
@@ -364,14 +365,38 @@ function CurrencyConverter() {
         </div>
       </div>
  
-      {/* Hasil — dalam section tersendiri */}
-      <div className="mt-4 rounded-xl bg-[#f2f2f2] px-4 py-5 min-h-[4.5rem] flex items-center">
-        {loading && <p className="text-sm text-[#1e1e1e]/50">Mengambil kurs…</p>}
-        {error && <p className="text-sm text-[#dc2626]">{error}</p>}
+      {/* Hasil — dalam section tersendiri, dengan tombol salin di kanan */}
+      <div className="mt-4 rounded-xl bg-[#f2f2f2] px-4 py-5 min-h-[4.5rem] flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          {loading && <p className="text-sm text-[#1e1e1e]/50">Mengambil kurs…</p>}
+          {error && <p className="text-sm text-[#dc2626]">{error}</p>}
+          {!loading && !error && result !== null && (
+            <p className="text-2xl font-bold text-[#1e1e1e]">
+              {fmtID(result)} {to}
+            </p>
+          )}
+        </div>
+ 
+        {/* Tombol salin — hanya tampil saat ada hasil */}
         {!loading && !error && result !== null && (
-          <p className="text-2xl font-bold text-[#1e1e1e]">
-            {fmtID(result)} {to}
-          </p>
+          <button
+            type="button"
+            data-testid="copy-convert-result"
+            onClick={async () => {
+              try {
+                // angka dibulatkan, polos tanpa pemisah ribuan
+                await navigator.clipboard.writeText(String(Math.round(result)));
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              } catch {
+                /* non-HTTPS: abaikan */
+              }
+            }}
+            className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-[#1e1e1e]/15 transition-colors"
+            style={{ backgroundColor: copied ? "#c1ff00" : "transparent", color: "#1e1e1e" }}
+          >
+            {copied ? "Tersalin ✓" : "Salin angka"}
+          </button>
         )}
       </div>
  
