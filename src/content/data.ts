@@ -577,3 +577,127 @@ export const DOC_REFERENCES: DocReferenceCard[] = [
     ],
   },
 ];
+// ============================================================================
+// QUOTE SNIPPETS (Jira Helper — mode "Quote Snippet")
+// Tempel di AKHIR src/content/data.ts.
+// ============================================================================
+//
+// Dua jenis:
+//  - Approval/Info: XXX DIBIARKAN mentah (tim tag manual di Jira). fields: []
+//  - Email: pakai {nama}/{NamaLengkap} dari field global, dan snippet volumetrik
+//    punya input dimensi + hitungan otomatis.
+//
+// Placeholder yang diisi otomatis oleh komponen:
+//   {nama}              = kata pertama dari Nama Lengkap
+//   {NamaLengkap}       = Nama Lengkap penuh
+//   {nobox},{p},{l},{t},{berat} = input manual
+//   {volume}            = p × l × t
+//   {volumetric}        = volume ÷ 5000 (belum dibulatkan)
+//   {volumetrikroundup} = pembulatan KE ATAS dari volumetric
+// ----------------------------------------------------------------------------
+
+export type QuoteFieldKey = "nama" | "nobox" | "p" | "l" | "t" | "berat";
+
+export interface QuoteSnippet {
+  id: string;
+  title: string;
+  body: string;
+  fields: QuoteFieldKey[]; // input yang dibutuhkan; [] = copy apa adanya
+}
+
+export interface QuoteSnippetGroup {
+  id: string;
+  name: string;
+  snippets: QuoteSnippet[];
+}
+
+export const QUOTE_SNIPPETS: QuoteSnippetGroup[] = [
+  {
+    id: "approval",
+    name: "Approval & Info (XXX di-tag manual di Jira)",
+    snippets: [
+      {
+        id: "lmr-available",
+        title: "Ask for Approval – LMR Available",
+        fields: [],
+        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Cust. tidak terkena extra charge pengantaran. Mohon Approvalnya.`,
+      },
+      {
+        id: "lmr-not-available",
+        title: "Ask for Approval – LMR Not Available",
+        fields: [],
+        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Cust. tidak terkena extra charge pengantaran. Mohon Approvalnya.
+FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx, karena untuk harga FedEx pada hari pickup belum tersedia`,
+      },
+      {
+        id: "newest-proposal",
+        title: "Ask for Approval – Newest Proposal",
+        fields: [],
+        body: `FYI kak **XXX** berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
+      },
+      {
+        id: "export-invoicing",
+        title: "Ask for Approval – Export → Invoicing",
+        fields: [],
+        body: `Berikut harga XXX, quotes Tersedia di drive, mohon approval utk lanjut invoicing kak **XXX**`,
+      },
+      {
+        id: "nambah-4cm",
+        title: "Ask for Approval – nambah 4 cm tiap sisi",
+        fields: [],
+        body: `Berikut harga FedEx jika shipment terkena damage dengan maksimum perubahan 4cm di setiap sisinya supaya dapat dilihat potential margin lossnya`,
+      },
+      {
+        id: "customer-mau-bayar",
+        title: "Jawaban – Customer mau bayar",
+        fields: [],
+        body: `Terkait biaya yang harus dibayarkan, nantinya pembayaran baru akan ditagihkan setelah seluruh barang tiba dan diukur ulang di warehouse kami di Indonesia. Biaya yang akan ditagihkan nantinya akan mengacu pada berat terbesar antara berat kontraktual pada quotations atau berat hasil ukur ulang setelah barang tiba di Indonesia.`,
+      },
+    ],
+  },
+  {
+    id: "email",
+    name: "Email (isi nama customer)",
+    snippets: [
+      {
+        id: "subject-email",
+        title: "Subject Email",
+        fields: ["nama"],
+        body: `Quotations Rimkirim Kepada {NamaLengkap}`,
+      },
+      {
+        id: "quote-pertama",
+        title: "Isi Email – Quote Pertama",
+        fields: ["nama"],
+        body: `Dear Kak {nama},
+
+Untuk melanjutkan proses booking penjemputan dan pembuatan resi.
+Mohon dibantu untuk melakukan konfirmasi atas estimasi biaya pengiriman dibawah ini ya kak.
+
+Sebagai informasi tambahan, jika terdapat perubahan atau penambahan berat, dimensi, atau surcharge lainnya pada paket Kak {nama}, kami akan menginformasikannya kembali setelah paket Kak {nama} kami timbang ulang saat tiba di Indonesia, ya, Kak.`,
+      },
+      {
+        id: "balasan-cipl",
+        title: "Isi Email – Balasan setelah perubahan CIPL",
+        fields: ["nama"],
+        body: `Dear Kak {nama},
+Berdasarkan perubahan terbaru pada CIPL,
+Mohon dibantu untuk melakukan konfirmasi atas estimasi biaya pengiriman terbaru dibawah ini ya kak.`,
+      },
+      {
+        id: "estimasi-volumetrik",
+        title: "Jawaban – Estimasi Berat (Volumetrik)",
+        fields: ["nama", "nobox", "p", "l", "t", "berat"],
+        body: `Dear Kak {nama},
+Terkait estimasi berat, berat {volumetrikroundup} kg diperoleh dari CIPL yang disubmit oleh Kak {nama}. Estimasi berat ini didapat dari perbandingan antara berat aktual dan berat volumetrik, di mana sistem akan menggunakan nilai yang lebih besar sebagai dasar perhitungan biaya.
+Rumus untuk menghitung berat volumetrik adalah:
+Berat Volumetrik (kg) = (Panjang × Lebar × Tinggi dalam cm) ÷ 5000
+Sebagai contoh, pada box ke-{nobox} dengan dimensi {p} cm × {l} cm × {t} cm:
+{p} cm × {l} cm × {t} cm = {volume} cm³
+{volume} ÷ 5000 = {volumetric} kg → dibulatkan menjadi {volumetrikroundup} kg
+Sementara itu, berat aktual box Kak {nama} adalah {berat} kg. Karena hasil perhitungan volumetrik {volumetrikroundup} kg yang lebih besar dibanding berat aktual, maka estimasi biaya yang digunakan adalah berdasarkan berat volumetrik yaitu {volumetrikroundup} kg.
+Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
+      },
+    ],
+  },
+];
