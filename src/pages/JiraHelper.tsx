@@ -8,7 +8,7 @@
  * ============================================================
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   CHECKLIST_TABLES,
@@ -436,38 +436,77 @@ function QuoteCard({
   );
 }
 
+// GANTI seluruh fungsi QuoteSnippetSection lama dengan versi ini.
+//
+// Perubahan:
+//   - Tombol "Scroll to Email Template" di atas.
+//   - Field "Nama Lengkap Customer" dipindah ke atas group yang memakai nama
+//     (group email). State tetap di parent karena QuoteCard membutuhkannya.
+//   - Anchor scroll (emailRef) dipasang di group email.
+//
+// PENTING — tambahkan useRef ke baris import di ATAS file JiraHelper.tsx:
+//   import React, { useMemo, useState, useRef } from "react";
+// (kalau useMemo tidak dipakai, biarkan saja — tidak error)
+
 function QuoteSnippetSection() {
   const [namaLengkap, setNamaLengkap] = useState("");
+  const emailRef = useRef<HTMLDivElement>(null);
+
+  const scrollToEmail = () => {
+    emailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-[#1e1e1e] mb-2">
-        Nama Lengkap Customer
-      </label>
-      <input
-        type="text"
-        value={namaLengkap}
-        onChange={(e) => setNamaLengkap(e.target.value)}
-        placeholder="mis. Annisa Putri"
-        data-testid="input-nama-customer"
-        className="w-full max-w-xs px-3 py-2 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20 mb-6"
-      />
+      {/* Tombol lompat ke bagian email */}
+      <button
+        type="button"
+        onClick={scrollToEmail}
+        data-testid="scroll-to-email"
+        className="mb-6 text-xs font-semibold px-3 py-2 rounded-lg border border-[#1e1e1e]/15 text-[#1e1e1e] hover:bg-[#1e1e1e]/[0.03] transition-colors"
+      >
+        ↓ Scroll to Email Template
+      </button>
 
       <div className="space-y-8">
-        {QUOTE_SNIPPETS.map((group) => (
-          <div key={group.id}>
-            <h3 className="text-sm font-bold text-[#1e1e1e] mb-3">{group.name}</h3>
-            <div className="space-y-3">
-              {group.snippets.map((s) => (
-                <QuoteCard key={s.id} snippet={s} namaLengkap={namaLengkap} />
-              ))}
+        {QUOTE_SNIPPETS.map((group) => {
+          // Group yang memakai nama customer (punya snippet dengan field "nama").
+          const needsNama = group.snippets.some((s) => s.fields.includes("nama"));
+
+          return (
+            <div key={group.id} ref={needsNama ? emailRef : undefined}>
+              <h3 className="text-sm font-bold text-[#1e1e1e] mb-3">{group.name}</h3>
+
+              {/* Field nama tampil tepat sebelum group email */}
+              {needsNama && (
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-[#1e1e1e] mb-2">
+                    Nama Lengkap Customer
+                  </label>
+                  <input
+                    type="text"
+                    value={namaLengkap}
+                    onChange={(e) => setNamaLengkap(e.target.value)}
+                    placeholder="mis. Annisa Putri"
+                    data-testid="input-nama-customer"
+                    className="w-full max-w-xs px-3 py-2 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {group.snippets.map((s) => (
+                  <QuoteCard key={s.id} snippet={s} namaLengkap={namaLengkap} />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
+
 export function JiraHelper() {
   const [subTab, setSubTab] = useState<SubTab>("checklist");
 
