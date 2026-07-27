@@ -450,6 +450,7 @@ function QuoteCard({
 
 function QuoteSnippetSection() {
   const [namaLengkap, setNamaLengkap] = useState("");
+  const [scrollHover, setScrollHover] = useState(false);
   const emailRef = useRef<HTMLDivElement>(null);
 
   const scrollToEmail = () => {
@@ -462,10 +463,16 @@ function QuoteSnippetSection() {
       <button
         type="button"
         onClick={scrollToEmail}
+        onMouseEnter={() => setScrollHover(true)}
+        onMouseLeave={() => setScrollHover(false)}
         data-testid="scroll-to-email"
-        className="mb-6 text-xs font-semibold px-3 py-2 rounded-lg border border-[#1e1e1e]/15 text-[#1e1e1e] hover:bg-[#1e1e1e]/[0.03] transition-colors"
+        className="w-full block text-center mb-6 text-sm font-semibold py-4 rounded-xl border border-[#1e1e1e]/15 transition-colors"
+        style={{
+          backgroundColor: scrollHover ? "var(--hub-accent)" : "transparent",
+          color: "#1e1e1e",
+        }}
       >
-        ↓ Scroll to Email Template
+        ↓ Scroll to Email Template ↓
       </button>
 
       <div className="space-y-8">
