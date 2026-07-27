@@ -156,7 +156,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
   {
     id: "pindahan",
     title: "Barang Pindahan",
-    jiraTitle: "**DOCS UPDATE (BARANG PINDAHAN)**",
+    jiraTitle: "DOCS UPDATE (BARANG PINDAHAN)",
     rows: [
       { no: 1, item: "[Doc Review] Passport", complete: "YES", remarks: "CLEAR" },
       { no: 2, item: "[Doc Review] E-NPWP / KTP", complete: "YES", remarks: "KTP" },
@@ -180,7 +180,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
   {
     id: "penumpang",
     title: "Barang Penumpang",
-    jiraTitle: "**DOCS UPDATE (BARANG PENUMPANG)**",
+    jiraTitle: "DOCS UPDATE (BARANG PENUMPANG)",
     rows: [
       { no: 1, item: "[Doc Review] Passport", complete: "YES", remarks: "CLEAR" },
       { no: 2, item: "[Doc Review] E-NPWP / KTP", complete: "YES", remarks: "KTP" },
@@ -199,7 +199,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
   {
     id: "kiriman",
     title: "Barang Kiriman",
-    jiraTitle: "**DOCS UPDATE (BARANG KIRIMAN)**",
+    jiraTitle: "DOCS UPDATE (BARANG KIRIMAN)",
     rows: [
       { no: 1, item: "[Doc Review] E-NPWP / KTP Receiver", complete: "YES", remarks: "KTP" },
       { no: 2, item: "[Doc Review] CI/PL - Correct Sender & Receiver Details", complete: "YES", remarks: "CLEAR" },
