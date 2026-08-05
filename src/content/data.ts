@@ -636,6 +636,13 @@ export const QUOTE_SNIPPETS: QuoteSnippetGroup[] = [
 FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx, karena untuk harga FedEx pada hari pickup belum tersedia`,
       },
       {
+        id: "lmr-not-available-dom",
+        title: "Ask for Approval – LMR Not Available (Extra Charge Domestik)",
+        fields: [],
+        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.
+        FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx, karena untuk harga FedEx pada hari pickup belum tersedia`,
+      },
+      {
         id: "newest-proposal",
         title: "Ask for Approval – Newest Proposal",
         fields: [],
