@@ -620,7 +620,13 @@ export const QUOTE_SNIPPETS: QuoteSnippetGroup[] = [
         id: "lmr-available",
         title: "Ask for Approval – LMR Available",
         fields: [],
-        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Cust. tidak terkena extra charge pengantaran. Mohon Approvalnya.`,
+        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer tidak terkena extra charge pengantaran. Mohon Approvalnya.`,
+      },
+      {
+        id: "lmr-available-dom",
+        title: "Ask for Approval – LMR Available (Extra Charge Domestik)",
+        fields: [],
+        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.`,
       },
       {
         id: "lmr-not-available",
