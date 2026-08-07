@@ -158,7 +158,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
     title: "Barang Pindahan",
     jiraTitle: "DOCS UPDATE (BARANG PINDAHAN)",
     rows: [
-      { no: 1, item: "[Jira Review] Domestic Address Validity", complete: "YES", remarks: "CLEAR" },
+      { no: 1, item: "[Jira Review] Domestic Address Validity (Kecamatan/Kelurahan)", complete: "YES", remarks: "CLEAR" },
       { no: 2, item: "[Doc Review] Passport", complete: "YES", remarks: "CLEAR" },
       { no: 3, item: "[Doc Review] E-NPWP / KTP", complete: "YES", remarks: "KTP" },
       { no: 4, item: "[Doc Review] CI/PL - Correct Sender & Receiver Details", complete: "YES", remarks: "CLEAR" },
@@ -183,7 +183,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
     title: "Barang Penumpang",
     jiraTitle: "DOCS UPDATE (BARANG PENUMPANG)",
     rows: [
-      { no: 1, item: "[Jira Review] Domestic Address Validity", complete: "YES", remarks: "CLEAR" },
+      { no: 1, item: "[Jira Review] Domestic Address Validity (Kecamatan/Kelurahan)", complete: "YES", remarks: "CLEAR" },
       { no: 2, item: "[Doc Review] Passport", complete: "YES", remarks: "CLEAR" },
       { no: 3, item: "[Doc Review] E-NPWP / KTP", complete: "YES", remarks: "KTP" },
       { no: 4, item: "[Doc Review] CI/PL - Correct Sender & Receiver Details", complete: "YES", remarks: "CLEAR" },
@@ -204,7 +204,7 @@ export const CHECKLIST_TABLES: ChecklistTable[] = [
     title: "Barang Kiriman",
     jiraTitle: "DOCS UPDATE (BARANG KIRIMAN)",
     rows: [
-      { no: 1, item: "[Jira Review] Domestic Address Validity", complete: "YES", remarks: "CLEAR" },
+      { no: 1, item: "[Jira Review] Domestic Address Validity (Kecamatan/Kelurahan)", complete: "YES", remarks: "CLEAR" },
       { no: 2, item: "[Doc Review] E-NPWP / KTP Receiver", complete: "YES", remarks: "KTP" },
       { no: 3, item: "[Doc Review] CI/PL - Correct Sender & Receiver Details", complete: "YES", remarks: "CLEAR" },
       { no: 4, item: "[Doc Review] CI/PL - Correct Purpose of Shipment", complete: "YES", remarks: "CLEAR" },
