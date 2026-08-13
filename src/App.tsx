@@ -20,6 +20,7 @@ import { EligibilityChecker } from './pages/EligibilityChecker';
 import { QuoteParser } from './pages/QuoteParser';
 import { JiraHelper } from './pages/JiraHelper';
 import { ContohDokumen } from './pages/ContohDokumen';
+import { CiplVsSkp } from './pages/CiplVsSkp';
 import { navItems } from './content/data';
 import React from 'react';
 
