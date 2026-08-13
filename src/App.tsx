@@ -33,6 +33,7 @@ const TOOL_COMPONENTS: Record<string, React.ReactElement> = {
   'eligibility-checker': <EligibilityChecker />,
   'quote-parser': <QuoteParser />,
   'contoh-dokumen': <ContohDokumen />,
+  'cipl-vs-skp': <CiplVsSkp />,
 };
 
 
