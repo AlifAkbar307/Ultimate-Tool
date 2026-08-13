@@ -527,14 +527,7 @@ export function QuoteParser() {
         </div>
       )}
 
-      {result.checksumWarning}
-        </div>
-      )}
-
       <CiplToSpreadsheet />
-    </div>
-  );
-}
     </div>
   );
 }
