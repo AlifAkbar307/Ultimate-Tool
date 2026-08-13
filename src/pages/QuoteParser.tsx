@@ -18,6 +18,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { CiplToSpreadsheet } from "./CiplToSpreadsheet";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LABEL CONFIGURATION
@@ -525,6 +526,15 @@ export function QuoteParser() {
           {result.checksumWarning}
         </div>
       )}
+
+      {result.checksumWarning}
+        </div>
+      )}
+
+      <CiplToSpreadsheet />
+    </div>
+  );
+}
     </div>
   );
 }
