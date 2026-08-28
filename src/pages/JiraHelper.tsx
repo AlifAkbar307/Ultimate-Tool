@@ -401,7 +401,7 @@ function CurrencyConverter() {
           type="button"
           onClick={swap}
           data-testid="currency-swap"
-          className="px-3 py-2 rounded-lg border border-[#1e1e1e]/15 text-[#1e1e1e] text-sm hover:bg-[#1e1e1e]/[0.03] transition-colors"
+          className="px-3 py-2 rounded-lg border border-transparent bg-[#c1ff00] text-[#1e1e1e] text-sm hover:brightness-95 transition-all active:scale-[0.98]"
           title="Tukar arah"
         >
           ⇄
