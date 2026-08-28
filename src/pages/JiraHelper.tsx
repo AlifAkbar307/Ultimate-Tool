@@ -324,9 +324,9 @@ function fmtID(n: number, maxFrac = 2): string {
 }
  
 function CurrencyConverter() {
-  const [amount, setAmount] = useState("1");
-  const [from, setFrom] = useState("EUR");
-  const [to, setTo] = useState("IDR");
+  const [amount, setAmount] = useState("500");
+  const [from, setFrom] = useState("USD");
+  const [to, setTo] = useState("GBP");
   const [copied, setCopied] = useState(false);
  
   // cache kurs per base currency supaya ganti "to" tidak fetch ulang
