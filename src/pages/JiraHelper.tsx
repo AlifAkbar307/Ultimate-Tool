@@ -84,10 +84,6 @@ function buildTableHtml(table: ChecklistTable, checkerName: string): string {
 const MENTION_TOKEN_G = /\{@([a-zA-Z0-9_-]+)\}/g;
 const MENTION_TOKEN = /\{@([a-zA-Z0-9_-]+)\}/;
 
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function hasMention(text: string): boolean {
   return MENTION_TOKEN.test(text);
 }
