@@ -246,6 +246,39 @@ export interface SnippetGroup {
 
 export const SNIPPET_GROUPS: SnippetGroup[] = [
   {
+    id: "BARU",
+    name: "PENAMBAHAN BARU",
+    snippets: [
+      {
+        id: "npwp-lama",
+        title: "Customer melampirkan NPWP lama",
+        body: `Mohon diinformasikan ke customer NPWP tidak valid, kita akan procceed menggunakan KTP saja`,
+      },
+      {
+        id: "diksi-empty",
+        title: "Untuk memastikan container semuanya kosong",
+        body: `Barang berikut jika kosong mohon tambahkan keterangan “empty” dan jika ada isi mohon tambahkan keterangan “consits of:..” setelah penulisan nama barang`,
+      },
+      {
+        id: "sp3bp-baru",
+        title: "Meminta alasan SP3BP",
+        body: `Mohon dibantu provide alasan SP3BP karena berdasarkan estimasi dari FedEx barang akan tiba lebih dulu dibanding tanggal tiba customer di Indonesia. Mohon dibantu dirincikan Alasan SP3BP. Contoh Sbb:
+  - Pickup: 10 Agustus | Tiba di Indonesia: 20 Agustus
+  - 10-11 Agustus: Proses pickup
+  - 12-13 Agustus: [KEGIATAN]
+  - 14-18 Agustus: [KEGIATAN]
+  - 19 Agustus: Flight dari [NEGARA]
+  - 20 Agustus: Tiba di Indonesia`,
+      },
+      {
+        id: "skl-nyusul",
+        title: "Customer belum melampirkan SKL/Ijazah",
+        body: `Dikarenakan customer belum dapat melampirkan SKL/Ijazah sebagai bukti bahwa studi telah berakhir, paket dapat dilakukan pickup terlebih dahulu.
+        Mohon disampaikan ke customer bahwa dokumen tersebut tetap wajib dilampirkan paling lambat sebelum barang tiba di Indonesia. Apabila belum tersedia, barang akan tertahan di warehouse FedEx sampai dokumen dilengkapi, dan akan timbul biaya warehouse sesuai yang tercantum pada quotation.`,
+      },
+    ],
+  },
+  {
     id: "sp3bp",
     name: "SP3BP & Pengiriman Lebih Awal",
     snippets: [
@@ -449,6 +482,8 @@ https://docs.google.com/document/d/1P_7JfisnXipouE407Yt4UkApi3sz9dAu/edit`,
     ],
   },
 ];
+
+  
 // ============================================================================
 // REFERENSI DOKUMEN (Tool "Contoh Dokumen")
 // ============================================================================
