@@ -707,7 +707,11 @@ FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx
         id: "approval-freight",
         title: "Ask for Approval – Pengiriman Freight",
         fields: [],
-        body: `FYI kak {@haris} berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
+        body: `Kak {@haris} Berikut harga FedEx. Salah satu box customer terkena Girth. Pada Drive tersedia 3 Quotations Terpisah:
+- All Boxes
+- Girth (box ke-X)
+- Non-Girth (box X-X)
+Quotations box Girth dan Non-Girth tersedia pada Folder masing-masing yang ada di Drive. Customer tidak terkena Extra charge Pengantaran. Berikut penawaran untuk box non-girth. Mohon Approvalnya kak.`,
       },
       {
         id: "export-invoicing",
