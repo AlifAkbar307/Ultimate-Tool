@@ -14,6 +14,7 @@ import {
   CHECKLIST_TABLES,
   CHECKER_DEFAULT,
   SNIPPET_GROUPS,
+  MENTION_IDS,
   ChecklistTable,
 } from "../content/data";
 
@@ -74,6 +75,43 @@ function buildTableHtml(table: ChecklistTable, checkerName: string): string {
   );
 }
 
+/**
+ * Mention Jira tidak bisa dibawa lewat teks polos: yang membentuk tag adalah
+ * node ProseMirror berisi account ID, bukan tulisan "@nama". Jadi snippet yang
+ * memuat {@key} disalin sebagai text/html, dan sisanya tetap teks polos seperti
+ * biasa. Key yang tidak ada di MENTION_IDS dibiarkan mentah agar terlihat.
+ */
+const MENTION_TOKEN_G = /\{@([a-zA-Z0-9_-]+)\}/g;
+const MENTION_TOKEN = /\{@([a-zA-Z0-9_-]+)\}/;
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function hasMention(text: string): boolean {
+  return MENTION_TOKEN.test(text);
+}
+
+/** Versi teks polos — dipakai untuk preview di kartu dan sebagai fallback. */
+function mentionToPlain(text: string): string {
+  return text.replace(MENTION_TOKEN_G, (whole, key: string) => {
+    const m = MENTION_IDS[key.toLowerCase()];
+    return m ? `@${m.username}` : whole;
+  });
+}
+
+/** Versi HTML — Jira membaca ini dan membentuk tag sungguhan. */
+function mentionToHtml(text: string): string {
+  const body = escapeHtml(text)
+    .replace(MENTION_TOKEN_G, (whole, key: string) => {
+      const m = MENTION_IDS[key.toLowerCase()];
+      if (!m) return whole;
+      return `<span data-prosemirror-content-type="node" data-prosemirror-node-name="mention" data-prosemirror-node-inline="true" data-mention-id="${m.id}" contenteditable="false">@${escapeHtml(m.username)}</span>`;
+    })
+    .replace(/\n/g, "<br>");
+  return `<p data-pm-slice="1 1 []">${body}</p>`;
+}
+
 /** Small "Salin" button that flashes #c1ff00 briefly after a successful copy. */
 function CopyButton({
   onCopy,
@@ -86,10 +124,30 @@ function CopyButton({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const handleClick = async () => {
+    const handleClick = async () => {
     const text = onCopy();
+    const plain = mentionToPlain(text);
+
+    // Jalur HTML hanya untuk snippet yang memang punya mention. Snippet lain
+    // tetap teks polos persis seperti sebelumnya — newline asli tidak berubah.
+    if (hasMention(text)) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([mentionToHtml(text)], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 700);
+        return;
+      } catch {
+        // Rich clipboard ditolak — jatuh ke teks polos di bawah.
+      }
+    }
+
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(plain);
       setCopied(true);
       setTimeout(() => setCopied(false), 700);
     } catch {
@@ -472,7 +530,7 @@ function SnippetSection() {
                     />
                   </div>
                   <p className="text-sm text-[#1e1e1e]/60 whitespace-pre-wrap leading-relaxed">
-                    {snippet.body}
+                    {mentionToPlain(snippet.body)}
                   </p>
                 </div>
               ))}
