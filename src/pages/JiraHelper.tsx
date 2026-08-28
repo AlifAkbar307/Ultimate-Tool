@@ -612,9 +612,30 @@ function QuoteCard({
     }
   }
 
-  async function handleCopy() {
+    async function handleCopy() {
+    const text = fillQuote(snippet, namaLengkap, dims);
+    const plain = mentionToPlain(text);
+
+    // Jalur HTML hanya untuk snippet yang punya {@key}; sisanya teks polos
+    // persis seperti sebelumnya.
+    if (hasMention(text)) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([mentionToHtml(text)], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+        return;
+      } catch {
+        /* rich clipboard ditolak — jatuh ke teks polos */
+      }
+    }
+
     try {
-      await navigator.clipboard.writeText(fillQuote(snippet, namaLengkap, dims));
+      await navigator.clipboard.writeText(plain);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
