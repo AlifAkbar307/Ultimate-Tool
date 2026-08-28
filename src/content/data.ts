@@ -243,6 +243,13 @@ export interface SnippetGroup {
   name: string;
   snippets: Snippet[];
 }
+// ── Daftar orang yang bisa di-mention dari snippet ──────────────────────────
+// Pakai {@key} di dalam body snippet. Kalau orangnya pindah/ganti, ubah di sini
+// saja — snippet tidak perlu disentuh. Key yang tidak terdaftar sengaja tampil
+// mentah sebagai "{@key}" supaya kelihatan salah, bukan lolos diam-diam.
+export const MENTION_IDS: Record<string, { id: string; username: string }> = {
+  haris: { id: "6333f8c607a27ebeff168f3f", username: "harisfadli" },
+};
 
 export const SNIPPET_GROUPS: SnippetGroup[] = [
   {
@@ -662,13 +669,13 @@ export interface QuoteSnippetGroup {
 export const QUOTE_SNIPPETS: QuoteSnippetGroup[] = [
   {
     id: "approval",
-    name: "Approval & Info (XXX di-tag manual di Jira)",
+    name: "Minta Approval Kak Haris😎",
     snippets: [
       {
         id: "lmr-available",
         title: "Ask for Approval – LMR Available",
         fields: [],
-        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer tidak terkena extra charge pengantaran. Mohon Approvalnya.`,
+        body: `kak {@haris} berikut harga dari FedEx. Quotes tersedia di Drive. Customer tidak terkena extra charge pengantaran. Mohon Approvalnya.`,
       },
       {
         id: "lmr-available-dom",
