@@ -681,45 +681,45 @@ export const QUOTE_SNIPPETS: QuoteSnippetGroup[] = [
         id: "lmr-available-dom",
         title: "Ask for Approval – LMR Available (Extra Charge Domestik)",
         fields: [],
-        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.`,
+        body: `kak {@haris} berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.`,
       },
       {
         id: "lmr-not-available",
         title: "Ask for Approval – LMR Not Available",
         fields: [],
-        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Cust. tidak terkena extra charge pengantaran. Mohon Approvalnya.
+        body: `kak {@haris} berikut harga dari FedEx. Quotes tersedia di Drive. Cust. tidak terkena extra charge pengantaran. Mohon Approvalnya.
 FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx, karena untuk harga FedEx pada hari pickup belum tersedia`,
       },
       {
         id: "lmr-not-available-dom",
         title: "Ask for Approval – LMR Not Available (Extra Charge Domestik)",
         fields: [],
-        body: `kak **XXX** berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.
+        body: `kak {@haris} berikut harga dari FedEx. Quotes tersedia di Drive. Customer terkena extra charge pengantaran ke XXX sebesar XXX IDR/KG. Mohon Approvalnya.
 FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx, karena untuk harga FedEx pada hari pickup belum tersedia`,
       },
       {
         id: "newest-proposal",
-        title: "Ask for Approval – Newest Proposal",
+        title: "FYI penawaran yang terbaru",
         fields: [],
-        body: `FYI kak **XXX** berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
+        body: `FYI kak {@haris} berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
+      },
+      {
+        id: "approval-freight",
+        title: "Ask for Approval – Pengiriman Freight",
+        fields: [],
+        body: `FYI kak {@haris} berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
       },
       {
         id: "export-invoicing",
         title: "Ask for Approval – Export → Invoicing",
         fields: [],
-        body: `Berikut harga XXX, quotes Tersedia di drive, mohon approval utk lanjut invoicing kak **XXX**`,
+        body: `Berikut harga XXX, quotes Tersedia di drive, mohon approval utk lanjut invoicing kak {@haris}`,
       },
       {
         id: "nambah-4cm",
         title: "Ask for Approval – nambah 4 cm tiap sisi",
         fields: [],
         body: `Berikut harga FedEx jika shipment terkena damage dengan maksimum perubahan 4cm di setiap sisinya supaya dapat dilihat potential margin lossnya`,
-      },
-      {
-        id: "customer-mau-bayar",
-        title: "Jawaban – Customer mau bayar",
-        fields: [],
-        body: `Terkait biaya yang harus dibayarkan, nantinya pembayaran baru akan ditagihkan setelah seluruh barang tiba dan diukur ulang di warehouse kami di Indonesia. Biaya yang akan ditagihkan nantinya akan mengacu pada berat terbesar antara berat kontraktual pada quotations atau berat hasil ukur ulang setelah barang tiba di Indonesia.`,
       },
     ],
   },
@@ -751,6 +751,12 @@ Sebagai informasi tambahan, jika terdapat perubahan atau penambahan berat, dimen
         body: `Dear Kak {nama},
 Berdasarkan perubahan terbaru pada CIPL,
 Mohon dibantu untuk melakukan konfirmasi atas estimasi biaya pengiriman terbaru dibawah ini ya kak.`,
+      },
+      {
+        id: "customer-mau-bayar",
+        title: "Jawaban – Customer mau bayar",
+        fields: [],
+        body: `Terkait biaya yang harus dibayarkan, nantinya pembayaran baru akan ditagihkan setelah seluruh barang tiba dan diukur ulang di warehouse kami di Indonesia. Biaya yang akan ditagihkan nantinya akan mengacu pada berat terbesar antara berat kontraktual pada quotations atau berat hasil ukur ulang setelah barang tiba di Indonesia.`,
       },
       {
         id: "estimasi-volumetrik",
