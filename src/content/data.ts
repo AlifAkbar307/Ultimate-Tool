@@ -274,7 +274,14 @@ export const SNIPPET_GROUPS: SnippetGroup[] = [
         id: "skl-nyusul",
         title: "Customer belum melampirkan SKL/Ijazah",
         body: `Dikarenakan customer belum dapat melampirkan SKL/Ijazah sebagai bukti bahwa studi telah berakhir, paket dapat dilakukan pickup terlebih dahulu.
-        Mohon disampaikan ke customer bahwa dokumen tersebut tetap wajib dilampirkan paling lambat sebelum barang tiba di Indonesia. Apabila belum tersedia, barang akan tertahan di warehouse FedEx sampai dokumen dilengkapi, dan akan timbul biaya warehouse sesuai yang tercantum pada quotation.`,
+Mohon disampaikan ke customer bahwa dokumen tersebut tetap wajib dilampirkan paling lambat sebelum barang tiba di Indonesia. Apabila belum tersedia, barang akan tertahan di warehouse FedEx sampai dokumen dilengkapi, dan akan timbul biaya warehouse sesuai yang tercantum pada quotation.`,
+      },
+      {
+        id: "freight",
+        title: "Salah satu paket terkena GIRTH/Freight",
+        body: `Mohon diinfokan kepada customer bahwa ukuran box X melebihi batas pengiriman parcel, sehingga box tersebut akan dikirim melalui layanan freight dan terpisah dari box lainnya.
+Pickup tetap dilakukan bersamaan, namun AWB yang diterbitkan akan terpisah karena jenis layanannya berbeda. Mohon dibantu konfirmasi ke customer terkait pemisahan pengiriman ini ya guys. 
+Apabila customer sudah menyetujui pemisahan ini, mohon diarahkan ke customer untuk membuat 2 CIPL terpisah: satu berisi box yang melebihi batas ukuran parcel, satu lagi berisi box sisanya.`,
       },
     ],
   },
