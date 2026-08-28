@@ -806,15 +806,15 @@ export const CURRENCY_LIST: CurrencyOption[] = [
   { code: "GBP", name: "British Pound" },
   { code: "SEK", name: "Swedish Krona" },
   { code: "CHF", name: "Swiss Franc" },
+  { code: "HUF", name: "Hungarian Forint" },
+  { code: "PLN", name: "Hungarian Forint" },
+  { code: "CZK", name: "Hungarian Forint" },
+  { code: "NOK", name: "Hungarian Forint" },
   // Asia
   { code: "JPY", name: "Japanese Yen" },
   { code: "SGD", name: "Singapore Dollar" },
   { code: "MYR", name: "Malaysian Ringgit" },
-  { code: "THB", name: "Thai Baht" },
-  { code: "CNY", name: "Chinese Yuan" },
   { code: "KRW", name: "South Korean Won" },
-  { code: "PHP", name: "Philippine Peso" },
-  { code: "VND", name: "Vietnamese Dong" },
   // Australia
   { code: "AUD", name: "Australian Dollar" },
 ];
