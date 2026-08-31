@@ -324,7 +324,7 @@ Apabila customer sudah menyetujui pemisahan ini, mohon diarahkan ke customer unt
       {
         id: "value-0-statement",
         title: "Barang value 0 di SKP butuh statement letter",
-        body: `Mohon infokan ke customer dikarenakan terdapat beberapa barang dengan value 0 pada SKP, maka akan dibutuhkan Statement letter pada saat tahap clearance nantinya (dibuatkan oleh tim clearance kita). Lalu mohon ditambahkan pada deskripsi tiket ini MEMBUTUHKAN STATEMENT LETTER: BEBERAPA BARANG VALUE 0`,
+        body: `Mohon infokan ke customer dikarenakan terdapat beberapa barang dengan value 0 pada SKP, maka akan dibutuhkan Statement letter pada saat tahap clearance nantinya (dibuatkan oleh tim clearance kita). Mohon dibantu provide alasan customer untuk menjelaskan kondisi tersebut untuk membantu pembuatan statement letter ya. Lalu mohon ditambahkan pada deskripsi tiket ini MEMBUTUHKAN STATEMENT LETTER: BEBERAPA BARANG VALUE 0`,
       },
       {
         id: "statement-alasan-studi",
