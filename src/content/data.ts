@@ -701,7 +701,7 @@ FYI harga berikut merupakan LMR hari esok untuk menampilkan estimasi harga FedEx
         id: "newest-proposal",
         title: "FYI penawaran yang terbaru",
         fields: [],
-        body: `FYI kak {@haris} berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang **turun** sekitar **XXX** IDR. Quotes updated Accordingly.`,
+        body: `FYI kak {@haris} berikut penawaran terbaru yang digunakan untuk pengiriman ini. Terdapat sedikit perubahan harga yang turun sekitar XXX IDR. Quotes updated Accordingly.`,
       },
       {
         id: "approval-freight",
