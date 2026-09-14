@@ -72,10 +72,10 @@ export const navItems: ToolItem[] = [
     description: `A curated repository of best-practice document examples, contract templates, and standard operating procedures.`,
   },
   {
-    id: "regulasi",
-    label: "Regulasi",
-    path: "/regulasi",
-    description: `Searchable database of current regulations, policy updates, and operational guidelines affecting our workflows.`,
+    id: "pickup-call",
+    label: "Pickup Call",
+    path: "/pickup-call",
+    description: `Pickup`,
   },
 ];
 
