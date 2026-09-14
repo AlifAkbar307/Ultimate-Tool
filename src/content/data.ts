@@ -787,6 +787,22 @@ Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
 // Nambah negara = tambah satu baris. Urutan dropdown = urutan penulisan.
 export const PICKUP_COUNTRIES: { country: string; phone: string }[] = [
   { country: "United Kingdom", phone: "03456 07 08 09" },
+  { country: "Jerman", phone: "01806 111 800" },
+  { country: "Belanda", phone: "08000222333" },
+  { country: "Prancis", phone: "0820 123 800" },
+  { country: "Spanyol", phone: "902 100 871" },
+  { country: "Swiss", phone: "0848 1 33339" },
+  { country: "Austria", phone: "0800 289747" },
+  { country: "Irlandia", phone: "1800 535 800" },
+  { country: "Republik Ceko", phone: "800 133 339" },
+  { country: "Polandia", phone: "801 420 420" },
+  { country: "Swedia", phone: "0200 252 252" },
+  { country: "Norwegia", phone: "063 94 03 00" },
+  { country: "Amerika Serikat", phone: "1-800-463-3339" },
+  { country: "Jepang", phone: "0120-003200" },
+  { country: "Korea Selatan", phone: "02.3496.7777" },
+  { country: "Australia", phone: "13-26-10" },
+  { country: "Malaysia", phone: "1800.88.6363" },
 ];
 
 // Key di sini mengacu ke MENTION_IDS di atas.
