@@ -545,7 +545,7 @@ function PageShell({
       </p>
 
       <div className="flex flex-col lg:flex-row lg:items-stretch gap-4">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
           <label className="block text-sm font-semibold text-[#1e1e1e] mb-2">
             CIPL &mdash; tabel paket + Consignment Total
           </label>
@@ -557,10 +557,10 @@ function PageShell({
             placeholder={
               "1 Box 12 45 cm x 27 cm x 23 cm\nBooks 30 pieces 30 150\n...\nConsignment Total\nTotal Packages Total Weight Total Item Invoice Total\n4 50 110 840"
             }
-            className="w-full h-full min-h-[220px] px-3 py-2.5 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
+            className="w-full flex-1 min-h-[220px] px-3 py-2.5 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
           />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
           <label className="block text-sm font-semibold text-[#1e1e1e] mb-2">
             SKP &mdash; Daftar Barang Pindahan
           </label>
@@ -572,7 +572,7 @@ function PageShell({
             placeholder={
               "Nomor Box 1\nNo Nama Barang Jumlah Perkiraan Harga Kondisi Barang\n1 Buku 30 PCE EUR 150 Bekas\nNomor Box 2\n..."
             }
-            className="w-full h-full min-h-[220px] px-3 py-2.5 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
+            className="w-full flex-1 min-h-[220px] px-3 py-2.5 rounded-lg border border-[#1e1e1e]/15 bg-white text-[#1e1e1e] text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#1e1e1e]/20"
           />
         </div>
       </div>
@@ -828,11 +828,11 @@ export function CiplVsSkp() {
                     style={flagStyle(key)}
                     className="cursor-pointer hover:bg-[#f2f2f2]"
                   >
-                    <td className="py-0.5 px-1.5 align-middle leading-snug h-[26px]">{it.name}</td>
-                    <td className="py-0.5 pl-3 pr-1.5 align-middle whitespace-nowrap text-right font-mono font-semibold text-[#1e1e1e] w-px">
+                    <td className="py-0.5 pr-3 pl-1.5 align-middle whitespace-nowrap text-left font-mono font-semibold text-[#1e1e1e] w-px">
                       {it.qty}
                       {it.unit ? ` ${it.unit}` : ""}
                     </td>
+                    <td className="py-0.5 px-1.5 align-middle leading-snug h-[26px]">{it.name}</td>
                   </tr>
                 );
               })}
