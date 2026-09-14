@@ -84,6 +84,13 @@ function round2(n: number): number {
 const DESC_LEAK = /\d+\s*cm\s*[x\u00d7]\s*\d+/i;
 const RED = "#dc2626";
 
+/**
+ * Nomor halaman yang berdiri sendiri di satu baris ("2 / 3"). Harus dibuang
+ * SEBELUM teks diratakan: begitu newline hilang, angkanya tidak bisa lagi
+ * dibedakan dari nomor barang.
+ */
+const PAGE_MARKER = /^[ \t]*\d{1,3}[ \t]*\/[ \t]*\d{1,3}[ \t]*$/gm;
+
 /** SKP item table column header, repeated per page — skipped. */
 const SKP_HEADER = /No\s+Nama\s+Barang\s+Jumlah\s+Perkiraan\s+Harga\s+Kondisi\s+Barang/gi;
 
@@ -171,7 +178,7 @@ interface SkpFail {
 function parseSkp(raw: string): SkpOk | SkpFail {
   if (!raw.trim()) return { ok: false, message: "SKP masih kosong." };
 
-  const flat = flatten(raw);
+  const flat = flatten(raw.replace(PAGE_MARKER, " "));
   const parts = flat.split(/Nomor Box\s+(\d+)/i);
   if (parts.length < 3) {
     return {
@@ -192,18 +199,36 @@ function parseSkp(raw: string): SkpOk | SkpFail {
     SKP_ROW.lastIndex = 0;
 
     while ((m = SKP_ROW.exec(body)) !== null) {
-      const segment = body.slice(prevEnd, m.index).trim();
-      const space = segment.indexOf(" ");
-      const itemNo = Number(segment.slice(0, space < 0 ? segment.length : space));
-      const name = space < 0 ? "" : segment.slice(space + 1).trim();
+      const segment = body.slice(prevEnd, m.index);
+      const expected = items.length + 1;
 
-      if (!Number.isFinite(itemNo)) {
+      // Cari nomor barang sebagai angka YANG DIHARAPKAN, bukan token pertama.
+      // Page break bisa memecah satu baris sehingga sisa nama barang muncul
+      // SESUDAH kolom angkanya — token pertama lalu bukan nomor barang.
+      const marker = new RegExp(`(^|\\s)${expected}(?=\\s)`).exec(segment);
+      if (!marker) {
         return {
           ok: false,
-          message: `SKP box ${boxNo}: nomor barang tidak terbaca pada "${segment.slice(0, 40)}".`,
+          message: `SKP box ${boxNo}: nomor barang ${expected} tidak ditemukan. Teks yang terbaca: "${segment
+            .trim()
+            .slice(0, 60)}".`,
         };
       }
-      items.push({ no: itemNo, name, qty: Number(m[1].replace(",", ".")), unit: m[2] ?? "" });
+
+      // Teks sebelum nomor barang adalah lanjutan nama barang SEBELUMNYA yang
+      // terpotong halaman — kembalikan ke tempatnya, jangan dibuang.
+      const carryOver = segment.slice(0, marker.index).trim();
+      if (carryOver && items.length > 0) {
+        items[items.length - 1].name = `${items[items.length - 1].name} ${carryOver}`.trim();
+      }
+
+      const name = segment.slice(marker.index + marker[0].length).trim();
+      items.push({
+        no: expected,
+        name,
+        qty: Number(m[1].replace(",", ".")),
+        unit: m[2] ?? "",
+      });
       prevEnd = m.index + m[0].length;
     }
 
@@ -221,17 +246,6 @@ function parseSkp(raw: string): SkpOk | SkpFail {
           60
         )}"). Biasanya karena kolom Perkiraan Harga kosong, atau kode mata uangnya bukan 3 huruf kapital.`,
       };
-    }
-
-    for (let k = 0; k < items.length; k++) {
-      if (items[k].no !== k + 1) {
-        return {
-          ok: false,
-          message: `SKP box ${boxNo}: nomor barang tidak berurutan — barang ke-${
-            k + 1
-          } terbaca sebagai "${items[k].no}".`,
-        };
-      }
     }
 
     const measures: Record<string, number> = {};
