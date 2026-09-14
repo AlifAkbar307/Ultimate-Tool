@@ -21,6 +21,7 @@ import {
 type SubTab = "checklist" | "snippets" | "quotes";
 import { QUOTE_SNIPPETS, type QuoteSnippet } from "../content/data";
 import { CURRENCY_LIST, type CurrencyOption } from "../content/data";
+import { hasMention, mentionToPlain, mentionToHtml } from "../lib/mention";
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "checklist", label: "Tabel Checklist" },
   { id: "snippets", label: "Snippet Komentar" },
@@ -73,39 +74,6 @@ function buildTableHtml(table: ChecklistTable, checkerName: string): string {
     `<p><strong>${escapeHtml(table.jiraTitle)}</strong></p>` +
     `<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>`
   );
-}
-
-/**
- * Mention Jira tidak bisa dibawa lewat teks polos: yang membentuk tag adalah
- * node ProseMirror berisi account ID, bukan tulisan "@nama". Jadi snippet yang
- * memuat {@key} disalin sebagai text/html, dan sisanya tetap teks polos seperti
- * biasa. Key yang tidak ada di MENTION_IDS dibiarkan mentah agar terlihat.
- */
-const MENTION_TOKEN_G = /\{@([a-zA-Z0-9_-]+)\}/g;
-const MENTION_TOKEN = /\{@([a-zA-Z0-9_-]+)\}/;
-
-function hasMention(text: string): boolean {
-  return MENTION_TOKEN.test(text);
-}
-
-/** Versi teks polos — dipakai untuk preview di kartu dan sebagai fallback. */
-function mentionToPlain(text: string): string {
-  return text.replace(MENTION_TOKEN_G, (whole, key: string) => {
-    const m = MENTION_IDS[key.toLowerCase()];
-    return m ? `@${m.username}` : whole;
-  });
-}
-
-/** Versi HTML — Jira membaca ini dan membentuk tag sungguhan. */
-function mentionToHtml(text: string): string {
-  const body = escapeHtml(text)
-    .replace(MENTION_TOKEN_G, (whole, key: string) => {
-      const m = MENTION_IDS[key.toLowerCase()];
-      if (!m) return whole;
-      return `<span data-prosemirror-content-type="node" data-prosemirror-node-name="mention" data-prosemirror-node-inline="true" data-mention-id="${m.id}" contenteditable="false">@${escapeHtml(m.username)}</span>`;
-    })
-    .replace(/\n/g, "<br>");
-  return `<p data-pm-slice="1 1 []">${body}</p>`;
 }
 
 /** Small "Salin" button that flashes #c1ff00 briefly after a successful copy. */
