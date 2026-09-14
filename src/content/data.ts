@@ -783,6 +783,32 @@ Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
   },
 ];
 
+// ── Pickup Call ─────────────────────────────────────────────────────────────
+// Nambah negara = tambah satu baris. Urutan dropdown = urutan penulisan.
+export const PICKUP_COUNTRIES: { country: string; phone: string }[] = [
+  { country: "United Kingdom", phone: "03456 07 08 09" },
+];
+
+// Key di sini mengacu ke MENTION_IDS di atas.
+export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
+
+export const PICKUP_TEMPLATE = `{csMention} Tolong Wa Customer Berikut. Template ada Di Bawah. Tinggal dikirimkan saja. Thank you.
+--
+Informasi Penjemputan
+Request penjemputan Anda telah berhasil dibooking melalui sistem FedEx.
+Mohon diperhatikan agar resi yang telah kami kirimkan dapat diprint dan ditempel di masing-masing paket, sebelum kurir tiba.
+Untuk instruksi lebih lengkapnya, silahkan periksa email Anda dengan mencari nomor resi pada subyek email yang telah kami kirimkan.
+Nomor resi Anda: {awb}
+Terima kasih
+--
+Hi kak, mohon dibantu agar prosesnya pickup lancar bisa dibantu utk hubungi CS FedEx di {negara} di hari penjemputan ya kak.
+Bisa dibantu hubungi CS FedEx di {negara}: {telepon}
+Ketika tersambung, mohon minta utk disambungkan ke Customer Service Agent.
+Lalu, apabila sudah tersambung mohon infokan nomor pickup dibawah ini dan tanyakan statusnya apakah masih on schedule / tidak.
+Mohon sebutkan:
+Booking Reference untuk penjemputan: {pickup}
+Tracking Number: {awb}`;
+
 // ============================================================================
 // CURRENCY LIST (Currency Converter)
 // Tempel di AKHIR src/content/data.ts.
@@ -821,29 +847,3 @@ export const CURRENCY_LIST: CurrencyOption[] = [
   // Australia
   { code: "AUD", name: "Australian Dollar" },
 ];
-
-// ── Pickup Call ─────────────────────────────────────────────────────────────
-// Nambah negara = tambah satu baris. Urutan dropdown = urutan penulisan.
-export const PICKUP_COUNTRIES: { country: string; phone: string }[] = [
-  { country: "United Kingdom", phone: "03456 07 08 09" },
-];
-
-// Key di sini mengacu ke MENTION_IDS di atas.
-export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
-
-export const PICKUP_TEMPLATE = `{csMention} Tolong Wa Customer Berikut. Template ada Di Bawah. Tinggal dikirimkan saja. Thank you.
---
-Informasi Penjemputan
-Request penjemputan Anda telah berhasil dibooking melalui sistem FedEx.
-Mohon diperhatikan agar resi yang telah kami kirimkan dapat diprint dan ditempel di masing-masing paket, sebelum kurir tiba.
-Untuk instruksi lebih lengkapnya, silahkan periksa email Anda dengan mencari nomor resi pada subyek email yang telah kami kirimkan.
-Nomor resi Anda: {awb}
-Terima kasih
---
-Hi kak, mohon dibantu agar prosesnya pickup lancar bisa dibantu utk hubungi CS FedEx di {negara} di hari penjemputan ya kak.
-Bisa dibantu hubungi CS FedEx di {negara}: {telepon}
-Ketika tersambung, mohon minta utk disambungkan ke Customer Service Agent.
-Lalu, apabila sudah tersambung mohon infokan nomor pickup dibawah ini dan tanyakan statusnya apakah masih on schedule / tidak.
-Mohon sebutkan:
-Booking Reference untuk penjemputan: {pickup}
-Tracking Number: {awb}`;
