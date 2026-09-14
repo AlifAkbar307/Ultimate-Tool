@@ -21,6 +21,7 @@ import { QuoteParser } from './pages/QuoteParser';
 import { JiraHelper } from './pages/JiraHelper';
 import { ContohDokumen } from './pages/ContohDokumen';
 import { CiplVsSkp } from './pages/CiplVsSkp';
+import { PickupCall } from './pages/PickupCall';
 import { navItems } from './content/data';
 import React from 'react';
 
@@ -34,6 +35,7 @@ const TOOL_COMPONENTS: Record<string, React.ReactElement> = {
   'quote-parser': <QuoteParser />,
   'contoh-dokumen': <ContohDokumen />,
   'cipl-vs-skp': <CiplVsSkp />,
+  'pickup-call': <PickupCall />,
 };
 
 
