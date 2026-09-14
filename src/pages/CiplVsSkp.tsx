@@ -53,6 +53,35 @@ import { motion } from "framer-motion";
 /** Tick-off colour. Deliberately NOT the neon accent: DESIGN.md §3 reserves
  *  #c1ff00 for buttons / active nav / copy flash and bars it from status. */
 const FLAG_GREEN = "#16a34a";
+
+/**
+ * Satuan yang menyatakan UKURAN, bukan jumlah potong. Kuantitasnya tetap
+ * ditampilkan apa adanya, tapi tidak dijumlahkan ke angka item dan tidak
+ * dibandingkan ke Total Item CIPL — menjumlahkan kilogram dengan potong
+ * menghasilkan angka yang tidak berarti apa-apa.
+ *
+ * Ini BUKAN daftar satuan yang diizinkan. Satuan apa pun tetap terbaca dan
+ * tampil verbatim; daftar ini hanya menentukan mana yang tidak ikut dihitung.
+ * Satuan yang tidak terdaftar dianggap satuan hitung.
+ */
+const MEASURE_UNITS = ["KGM", "GRM", "LTR", "MTR", "CMT", "MTK", "MTQ"];
+
+function isMeasureUnit(unit: string): boolean {
+  return MEASURE_UNITS.includes(unit.toUpperCase());
+}
+
+/** Bulatkan ke 2 desimal supaya penjumlahan float tidak memunculkan 0.30000004. */
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Sisa dimensi yang seharusnya sudah terpotong dari deskripsi CIPL. Kalau pola
+ * ini masih ada, berarti deskripsi menelan baris berikutnya — kejadian nyata,
+ * penyebabnya belum diketahui. Dijadikan error bernama supaya terlihat, bukan
+ * lolos diam-diam ke layar.
+ */
+const DESC_LEAK = /\d+\s*cm\s*[x\u00d7]\s*\d+/i;
 const RED = "#dc2626";
 
 /** SKP item table column header, repeated per page — skipped. */
@@ -79,7 +108,7 @@ const DIM_NEW = /(\d+)\s*[x\u00d7]\s*(\d+)\s*[x\u00d7]\s*(\d+)/gi;
  * has a 4th letter that destroys the trailing boundary, so none can be mistaken
  * for a currency. The unit is free text and may be absent entirely.
  */
-const SKP_ROW = /(\d+)\s+(?:([^\s\d]\S*)\s+)?\b([A-Z]{3})\b\s*([\d.,]+)\s+(\S+)/g;
+const SKP_ROW = /(\d+(?:[.,]\d+)?)\s+(?:([^\s\d]\S*)\s+)?\b([A-Z]{3})\b\s*([\d.,]+)\s+(\S+)/g;
 
 interface SkpItem {
   no: number;
@@ -91,7 +120,10 @@ interface SkpItem {
 interface SkpBox {
   no: number;
   items: SkpItem[];
+  /** Jumlah potong — hanya dari satuan hitung. */
   total: number;
+  /** Satuan ukuran (KGM dll) dijumlahkan terpisah per satuan. */
+  measures: Record<string, number>;
 }
 interface CiplBox {
   no: number;
@@ -129,6 +161,7 @@ interface SkpOk {
   ok: true;
   boxes: SkpBox[];
   total: number;
+  measures: Record<string, number>;
 }
 interface SkpFail {
   ok: false;
@@ -170,7 +203,7 @@ function parseSkp(raw: string): SkpOk | SkpFail {
           message: `SKP box ${boxNo}: nomor barang tidak terbaca pada "${segment.slice(0, 40)}".`,
         };
       }
-      items.push({ no: itemNo, name, qty: Number(m[1]), unit: m[2] ?? "" });
+      items.push({ no: itemNo, name, qty: Number(m[1].replace(",", ".")), unit: m[2] ?? "" });
       prevEnd = m.index + m[0].length;
     }
 
@@ -201,7 +234,16 @@ function parseSkp(raw: string): SkpOk | SkpFail {
       }
     }
 
-    boxes.push({ no: boxNo, items, total: items.reduce((a, it) => a + it.qty, 0) });
+    const measures: Record<string, number> = {};
+    let counted = 0;
+    for (const it of items) {
+      if (isMeasureUnit(it.unit)) {
+        measures[it.unit.toUpperCase()] = round2((measures[it.unit.toUpperCase()] ?? 0) + it.qty);
+      } else {
+        counted += it.qty;
+      }
+    }
+    boxes.push({ no: boxNo, items, total: round2(counted), measures });
   }
 
   for (let k = 0; k < boxes.length; k++) {
@@ -213,7 +255,13 @@ function parseSkp(raw: string): SkpOk | SkpFail {
     }
   }
 
-  return { ok: true, boxes, total: boxes.reduce((a, b) => a + b.total, 0) };
+  const measures: Record<string, number> = {};
+  for (const b of boxes) {
+    for (const [u, v] of Object.entries(b.measures)) {
+      measures[u] = round2((measures[u] ?? 0) + v);
+    }
+  }
+  return { ok: true, boxes, total: round2(boxes.reduce((a, b) => a + b.total, 0)), measures };
 }
 
 // ── CIPL ────────────────────────────────────────────────────────────────────
@@ -378,10 +426,18 @@ function parseCipl(raw: string): CiplOk | CiplFail {
       if (dt.length >= 2) desc = desc.slice(0, dt[dt.length - 2].start);
     }
 
+    const cleanDesc = stripTrailingTotals(desc);
+    if (DESC_LEAK.test(cleanDesc)) {
+      return {
+        ok: false,
+        message: `Deskripsi CIPL box ${boxNo} masih memuat dimensi box berikutnya — kemungkinan ada baris yang dimensinya tidak lengkap (misal "58 cm x 42 cm x 35" tanpa "cm" terakhir). Cek baris setelah box ${boxNo}.`,
+      };
+    }
+
     boxes.push({
       no: boxNo,
       type: head.slice(noTok.end, weightTok.start).trim(),
-      items: splitDescription(stripTrailingTotals(desc)),
+      items: splitDescription(cleanDesc),
     });
   }
 
@@ -666,11 +722,11 @@ export function CiplVsSkp() {
     <div className="px-4 py-3 border-r border-[#1e1e1e]/10">
       {box ? (
         <>
-          <div className="text-xs font-bold text-[#1e1e1e]/55 mb-1.5">
+          <div className="flex items-center justify-end h-6 text-xs font-bold text-[#1e1e1e]/55 mb-1.5">
             CIPL Box {box.no}
             {box.type ? ` · ${box.type}` : ""}
           </div>
-          <ul className="text-sm text-[#1e1e1e]">
+          <ul className="text-sm text-[#1e1e1e] text-right">
             {box.items.map((it, k) => {
               const key = `cipl-${box.no}-${k}`;
               return (
@@ -679,7 +735,7 @@ export function CiplVsSkp() {
                   onClick={() => toggleFlag(key)}
                   data-testid={key}
                   style={flagStyle(key)}
-                  className="cursor-pointer leading-snug py-0.5 px-1.5 -mx-1.5 rounded hover:bg-[#f2f2f2]"
+                  className="cursor-pointer leading-snug min-h-[26px] flex items-center justify-end py-0.5 px-1.5 -mx-1.5 rounded hover:bg-[#f2f2f2]"
                 >
                   {it}
                 </li>
@@ -708,9 +764,10 @@ export function CiplVsSkp() {
     <div className="px-4 py-3">
       {box ? (
         <>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 h-6 mb-1.5">
             <span className="text-xs font-bold text-[#1e1e1e]/55">
               SKP Box {box.no} &middot; {box.total} item
+              {Object.entries(box.measures).map(([u, v]) => ` · ${v} ${u}`).join("")}
             </span>
             <span className="flex-1" />
             {!isParked && (
@@ -757,8 +814,8 @@ export function CiplVsSkp() {
                     style={flagStyle(key)}
                     className="cursor-pointer hover:bg-[#f2f2f2]"
                   >
-                    <td className="py-0.5 px-1.5 align-top leading-snug">{it.name}</td>
-                    <td className="py-0.5 px-1.5 align-top whitespace-nowrap text-right font-mono text-[#1e1e1e]/70">
+                    <td className="py-0.5 px-1.5 align-middle leading-snug h-[26px]">{it.name}</td>
+                    <td className="py-0.5 pl-3 pr-1.5 align-middle whitespace-nowrap text-right font-mono font-semibold text-[#1e1e1e] w-px">
                       {it.qty}
                       {it.unit ? ` ${it.unit}` : ""}
                     </td>
@@ -811,6 +868,13 @@ export function CiplVsSkp() {
             &nbsp;&mdash;&nbsp; CIPL {cipl.totals.packages} box &middot; {cipl.totals.items} item
             &middot; {cipl.totals.weight} kg
           </p>
+          {Object.keys(skp.measures).length > 0 && (
+            <p className="text-sm font-semibold mt-1 text-[#1e1e1e]/75">
+              Tidak ikut dibandingkan:{" "}
+              {Object.entries(skp.measures).map(([u, v]) => `${v} ${u}`).join(" · ")}{" "}
+              — satuan ukuran, bukan jumlah potong.
+            </p>
+          )}
           <p className="text-sm mt-1 text-[#1e1e1e]/60">{note}</p>
         </div>
 
