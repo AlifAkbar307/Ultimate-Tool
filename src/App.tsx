@@ -19,6 +19,7 @@ import { ToolPage } from './pages/ToolPage';
 import { EligibilityChecker } from './pages/EligibilityChecker';
 import { QuoteParser } from './pages/QuoteParser';
 import { JiraHelper } from './pages/JiraHelper';
+import { ContohDokumen } from './pages/ContohDokumen';
 import { CiplVsSkp } from './pages/CiplVsSkp';
 import { PickupCall } from './pages/PickupCall';
 import { navItems } from './content/data';
