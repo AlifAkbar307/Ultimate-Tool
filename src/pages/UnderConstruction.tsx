@@ -20,7 +20,7 @@ import { motion } from "framer-motion";
 // CONFIGURATION
 // ══════════════════════════════════════════════════════════════════════════════
 
-const IMAGE_SRC = "/placeholder/under-construction.png";
+const IMAGE_SRC = "/under-construction.png";
 const DEFAULT_TITLE = "Segera Hadir";
 const DEFAULT_NOTE = "Halaman ini sedang disiapkan. Belum ada yang bisa dikerjakan di sini.";
 
