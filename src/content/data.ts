@@ -783,27 +783,55 @@ Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
   },
 ];
 
-// ── Pickup Call ─────────────────────────────────────────────────────────────
-// Nambah negara = tambah satu baris. Urutan dropdown = urutan penulisan.
-export const PICKUP_COUNTRIES: { country: string; phone: string }[] = [
-  { country: "United Kingdom", phone: "03456 07 08 09" },
-  { country: "Jerman", phone: "01806 111 800" },
-  { country: "Belanda", phone: "08000222333" },
-  { country: "Prancis", phone: "0820 123 800" },
-  { country: "Spanyol", phone: "902 100 871" },
-  { country: "Swiss", phone: "0848 1 33339" },
-  { country: "Austria", phone: "0800 289747" },
-  { country: "Irlandia", phone: "1800 535 800" },
-  { country: "Republik Ceko", phone: "800 133 339" },
-  { country: "Polandia", phone: "801 420 420" },
-  { country: "Swedia", phone: "0200 252 252" },
-  { country: "Norwegia", phone: "063 94 03 00" },
-  { country: "Amerika Serikat", phone: "1-800-463-3339" },
-  { country: "Jepang", phone: "0120-003200" },
-  { country: "Korea Selatan", phone: "02.3496.7777" },
-  { country: "Australia", phone: "13-26-10" },
-  { country: "Malaysia", phone: "1800.88.6363" },
+// phone diisi hanya kalau nomor CS-nya sudah diverifikasi. Negara tanpa phone
+// tetap muncul di Email Export (cuma butuh kode), tapi disembunyikan dari
+// Chat Pickup — menawarkan negara tanpa nomor berarti mengirim customer
+// menelepon ke tempat yang tidak ada.
+export const PICKUP_COUNTRIES: { country: string; code: string; phone?: string }[] = [
+  { country: "Australia", code: "AU", phone: "13-26-10" },
+  { country: "Austria", code: "AT", phone: "0800 289747" },
+  { country: "Belgia", code: "BE" },
+  { country: "Kanada", code: "CA" },
+  { country: "China", code: "CN" },
+  { country: "Finlandia", code: "FI" },
+  { country: "Prancis", code: "FR", phone: "0820 123 800" },
+  { country: "Jerman", code: "DE", phone: "01806 111 800" },
+  { country: "Hungaria", code: "HU" },
+  { country: "Indonesia", code: "ID" },
+  { country: "Irlandia", code: "IE", phone: "1800 535 800" },
+  { country: "Italia", code: "IT" },
+  { country: "Jepang", code: "JP", phone: "0120-003200" },
+  { country: "Malaysia", code: "MY", phone: "1800.88.6363" },
+  { country: "Belanda", code: "NL", phone: "08000222333" },
+  { country: "Norwegia", code: "NO", phone: "063 94 03 00" },
+  { country: "Filipina", code: "PH" },
+  { country: "Polandia", code: "PL", phone: "801 420 420" },
+  { country: "Singapura", code: "SG" },
+  { country: "Korea Selatan", code: "KR", phone: "02.3496.7777" },
+  { country: "Spanyol", code: "ES", phone: "902 100 871" },
+  { country: "Swedia", code: "SE", phone: "0200 252 252" },
+  { country: "Swiss", code: "CH", phone: "0848 1 33339" },
+  { country: "Thailand", code: "TH" },
+  { country: "Inggris", code: "GB", phone: "03456 07 08 09" },
+  { country: "Amerika Serikat", code: "US", phone: "1-800-463-3339" },
 ];
+
+export const SHIPPING_VENDORS: { id: string; label: string; emailName: string }[] = [
+  { id: "fedex", label: "FedEx", emailName: "FedEx" },
+  { id: "ups", label: "UPS - Exsis", emailName: "UPS" },
+  { id: "dhl", label: "DHL - Next", emailName: "DHL" },
+  { id: "rayspeed", label: "Rayspeed", emailName: "Rayspeed" },
+  { id: "tlx", label: "TLX", emailName: "TLX" },
+  { id: "aramex", label: "Aramex", emailName: "Aramex" },
+];
+
+export const EXPORT_EMAIL_SUBJECT = `{awb} / Pengiriman {kodeAsal}-{kodeNegara} / {namaLengkap}`;
+
+export const EXPORT_EMAIL_BODY = `Dear kak {nama},
+
+Kami ingin menginformasikan bahwa paket Kak {nama} sudah kami terima dengan aman dan telah diukur ulang di kantor kami. Berikut resi yang dapat digunakan untuk melacak paket selama pengiriman ke {negara} via {vendor}. Paket akan dipickup pada {tanggalPickup}, di kantor kami.
+
+Seluruh dokumen yang diperlukan untuk proses ekspor saat ini sudah kami terima. Apabila pihak Bea Cukai {negara} meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.`;
 
 // Key di sini mengacu ke MENTION_IDS di atas.
 export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
