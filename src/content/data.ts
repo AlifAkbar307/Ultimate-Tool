@@ -812,7 +812,7 @@ export const PICKUP_COUNTRIES: { country: string; code: string; phone?: string }
   { country: "Swedia", code: "SE", phone: "0200 252 252" },
   { country: "Swiss", code: "CH", phone: "0848 1 33339" },
   { country: "Thailand", code: "TH" },
-  { country: "Inggris", code: "GB", phone: "03456 07 08 09" },
+  { country: "Inggris", code: "UK", phone: "03456 07 08 09" },
   { country: "Amerika Serikat", code: "US", phone: "1-800-463-3339" },
 ];
 
