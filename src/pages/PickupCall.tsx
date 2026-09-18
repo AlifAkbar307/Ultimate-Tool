@@ -43,8 +43,12 @@ import { copyWithMentions, mentionToPlain } from "../lib/mention";
 // CONFIGURATION
 // ══════════════════════════════════════════════════════════════════════════════
 
-/** Panjang nomor AWB FedEx. Dipakai untuk peringatan saja, tidak memblokir. */
-const AWB_DIGITS = 12;
+/**
+ * Panjang nomor resi berbeda antar vendor — FedEx 12 digit, Rayspeed 17.
+ * Jadi yang dicek cuma batas bawah, untuk menangkap paste yang kepotong.
+ * Peringatan saja, tidak pernah memblokir.
+ */
+const AWB_MIN_DIGITS = 10;
 
 /** Kode negara asal untuk subjek email ekspor. */
 const ORIGIN_CODE = "ID";
@@ -71,6 +75,33 @@ function digitCount(value: string): number {
 /** "Reinol Eko Sianturi" -> "Reinol" */
 function firstName(full: string): string {
   return full.trim().split(/\s+/)[0] ?? "";
+}
+
+/**
+ * Pecah judul tiket Jira jadi nomor resi + nama.
+ *   "877228419927 / Monica Jenifer Siandita"
+ *   "10002023160912860 / Youngky Johanie Ecinos (ID - SG) (Kloter 34)"
+ * Kurung di ujung nama (rute, kloter) dibuang — itu penanda internal, bukan
+ * bagian dari nama customer yang masuk ke sapaan email.
+ */
+function parseTicket(raw: string): { awb: string; nama: string } {
+  const slash = raw.indexOf("/");
+  if (slash < 0) return { awb: raw.trim(), nama: "" };
+  const awb = raw.slice(0, slash).trim();
+  let nama = raw.slice(slash + 1).trim();
+  while (/\([^)]*\)\s*$/.test(nama)) {
+    nama = nama.replace(/\s*\([^)]*\)\s*$/, "").trim();
+  }
+  return { awb, nama };
+}
+
+/** Buka kalender begitu field tanggal disentuh, bukan hanya ikonnya. */
+function openDatePicker(el: HTMLInputElement | null) {
+  try {
+    (el as unknown as { showPicker?: () => void })?.showPicker?.();
+  } catch {
+    // Browser lama tidak punya showPicker — field tetap bisa dipakai biasa.
+  }
 }
 
 /**
@@ -137,13 +168,21 @@ function CopyButton({
 
 // ── TAB: Chat Pickup ────────────────────────────────────────────────────────
 
+/** Urut abjad Indonesia. Diurutkan di sini, bukan di data.ts, supaya nambah
+ *  negara cukup ditempel di mana saja tanpa memikirkan posisinya. */
+const COUNTRIES_SORTED = [...PICKUP_COUNTRIES].sort((a, b) =>
+  a.country.localeCompare(b.country, "id")
+);
+
 function ChatPickupTab() {
   const [countryName, setCountryName] = useState("");
-  const [awb, setAwb] = useState("");
+  const [ticket, setTicket] = useState("");
   const [pickup, setPickup] = useState("");
 
+  const { awb } = parseTicket(ticket);
+
   // Hanya negara yang punya nomor CS — lihat catatan di kepala file.
-  const withPhone = PICKUP_COUNTRIES.filter((c) => Boolean(c.phone));
+  const withPhone = COUNTRIES_SORTED.filter((c) => Boolean(c.phone));
   const selected = withPhone.find((c) => c.country === countryName);
   const ready = Boolean(selected) && awb.trim() !== "" && pickup.trim() !== "";
 
@@ -153,15 +192,15 @@ function ChatPickupTab() {
     text = replaceAll(text, "{csMention}", PICKUP_CS_MENTIONS.map((k) => `{@${k}}`).join(" "));
     text = replaceAll(text, "{negara}", selected.country);
     text = replaceAll(text, "{telepon}", selected.phone ?? "");
-    text = replaceAll(text, "{awb}", awb.trim());
+    text = replaceAll(text, "{awb}", awb);
     text = replaceAll(text, "{pickup}", pickup.trim());
     return text;
   }, [selected, awb, pickup]);
 
   const awbDigits = digitCount(awb);
   const awbWarning =
-    awb.trim() !== "" && awbDigits !== AWB_DIGITS
-      ? `Nomor AWB terbaca ${awbDigits} digit, biasanya ${AWB_DIGITS}. Cek lagi sebelum dikirim.`
+    awb.trim() !== "" && awbDigits < AWB_MIN_DIGITS
+      ? `Nomor resi terbaca ${awbDigits} digit — terlalu pendek. Kemungkinan paste-nya kepotong.`
       : null;
 
   return (
@@ -188,14 +227,17 @@ function ChatPickupTab() {
         </div>
 
         <div className="flex flex-col">
-          <label className={labelClass}>Nomor AWB</label>
+          <label className={labelClass}>Judul tiket / nomor resi</label>
           <input
-            value={awb}
-            onChange={(e) => setAwb(e.target.value)}
+            value={ticket}
+            onChange={(e) => setTicket(e.target.value)}
             data-testid="pickup-awb"
-            placeholder={`${AWB_DIGITS} digit`}
+            placeholder="877228419927 / Nama Customer"
             className={inputClass}
           />
+          {awb !== "" && (
+            <p className="mt-1.5 text-xs text-[#1e1e1e]/55">Resi terbaca: {awb}</p>
+          )}
         </div>
 
         <div className="flex flex-col">
@@ -252,27 +294,26 @@ function ChatPickupTab() {
 
 function EmailExportTab() {
   const [countryName, setCountryName] = useState("");
-  const [namaLengkap, setNamaLengkap] = useState("");
-  const [awb, setAwb] = useState("");
+  const [ticket, setTicket] = useState("");
   const [tanggal, setTanggal] = useState("");
   const [vendorId, setVendorId] = useState(SHIPPING_VENDORS[0]?.id ?? "");
 
-  const selected = PICKUP_COUNTRIES.find((c) => c.country === countryName);
+  const { awb, nama: namaLengkap } = parseTicket(ticket);
+
+  // Negara asal tidak bisa jadi negara tujuan — "ID-ID" tidak pernah benar.
+  const destinations = COUNTRIES_SORTED.filter((c) => c.code !== ORIGIN_CODE);
+  const selected = destinations.find((c) => c.country === countryName);
   const vendor = SHIPPING_VENDORS.find((v) => v.id === vendorId);
   const ready =
-    Boolean(selected) &&
-    Boolean(vendor) &&
-    namaLengkap.trim() !== "" &&
-    awb.trim() !== "" &&
-    tanggal !== "";
+    Boolean(selected) && Boolean(vendor) && namaLengkap !== "" && awb !== "" && tanggal !== "";
 
   const fill = (template: string): string => {
     let text = template;
-    text = replaceAll(text, "{awb}", awb.trim());
+    text = replaceAll(text, "{awb}", awb);
     text = replaceAll(text, "{kodeNegara}", selected?.code ?? "");
     text = replaceAll(text, "{kodeAsal}", ORIGIN_CODE);
     text = replaceAll(text, "{negara}", selected?.country ?? "");
-    text = replaceAll(text, "{namaLengkap}", namaLengkap.trim());
+    text = replaceAll(text, "{namaLengkap}", namaLengkap);
     text = replaceAll(text, "{nama}", firstName(namaLengkap));
     text = replaceAll(text, "{tanggalPickup}", formatTanggal(tanggal));
     text = replaceAll(text, "{vendor}", vendor?.emailName ?? "");
@@ -290,8 +331,8 @@ function EmailExportTab() {
 
   const awbDigits = digitCount(awb);
   const awbWarning =
-    awb.trim() !== "" && awbDigits !== AWB_DIGITS
-      ? `Nomor AWB terbaca ${awbDigits} digit, biasanya ${AWB_DIGITS}. Cek lagi sebelum dikirim.`
+    awb.trim() !== "" && awbDigits < AWB_MIN_DIGITS
+      ? `Nomor resi terbaca ${awbDigits} digit — terlalu pendek. Kemungkinan paste-nya kepotong.`
       : null;
 
   const plainCopy = async (text: string): Promise<boolean> => {
@@ -307,17 +348,17 @@ function EmailExportTab() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col">
-          <label className={labelClass}>Nama lengkap customer</label>
+          <label className={labelClass}>Judul tiket Jira</label>
           <input
-            value={namaLengkap}
-            onChange={(e) => setNamaLengkap(e.target.value)}
-            data-testid="export-nama"
-            placeholder="Reinol Eko Sianturi"
+            value={ticket}
+            onChange={(e) => setTicket(e.target.value)}
+            data-testid="export-ticket"
+            placeholder="877228419927 / Monica Jenifer Siandita"
             className={inputClass}
           />
-          {namaLengkap.trim() !== "" && (
+          {(awb !== "" || namaLengkap !== "") && (
             <p className="mt-1.5 text-xs text-[#1e1e1e]/55">
-              Sapaan di isi email: kak {firstName(namaLengkap)}
+              Resi {awb || "\u2014"} &middot; sapaan: kak {firstName(namaLengkap) || "\u2014"}
             </p>
           )}
         </div>
@@ -331,7 +372,7 @@ function EmailExportTab() {
             className={inputClass}
           >
             <option value="">&mdash; pilih negara &mdash;</option>
-            {PICKUP_COUNTRIES.map((c) => (
+            {destinations.map((c) => (
               <option key={c.code} value={c.country}>
                 {c.country} ({c.code})
               </option>
@@ -340,24 +381,15 @@ function EmailExportTab() {
         </div>
 
         <div className="flex flex-col">
-          <label className={labelClass}>Nomor AWB</label>
-          <input
-            value={awb}
-            onChange={(e) => setAwb(e.target.value)}
-            data-testid="export-awb"
-            placeholder={`${AWB_DIGITS} digit`}
-            className={inputClass}
-          />
-        </div>
-
-        <div className="flex flex-col">
           <label className={labelClass}>Tanggal pickup</label>
           <input
             type="date"
             value={tanggal}
             onChange={(e) => setTanggal(e.target.value)}
+            onClick={(e) => openDatePicker(e.currentTarget)}
+            onFocus={(e) => openDatePicker(e.currentTarget)}
             data-testid="export-tanggal"
-            className={inputClass}
+            className={`${inputClass} cursor-pointer`}
           />
           {tanggal !== "" && (
             <p className="mt-1.5 text-xs text-[#1e1e1e]/55">{formatTanggal(tanggal)}</p>
@@ -470,14 +502,18 @@ export function PickupCall() {
             type="button"
             onClick={() => setTab(t.id)}
             data-testid={`subtab-${t.id}`}
-            className="px-4 h-8 rounded-full text-sm font-semibold transition-colors"
-            style={
-              tab === t.id
-                ? { backgroundColor: "var(--hub-accent)", color: "#1e1e1e" }
-                : { color: "#1e1e1e", opacity: 0.55 }
-            }
+            className="relative px-4 h-8 rounded-full text-sm font-semibold"
+            style={{ color: "#1e1e1e", opacity: tab === t.id ? 1 : 0.55 }}
           >
-            {t.label}
+            {tab === t.id && (
+              <motion.span
+                layoutId="pickup-subtab-pill"
+                className="absolute inset-0 rounded-full"
+                style={{ backgroundColor: "var(--hub-accent)" }}
+                transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              />
+            )}
+            <span className="relative z-10">{t.label}</span>
           </button>
         ))}
       </div>
