@@ -825,6 +825,23 @@ Mohon sebutkan:
 Booking Reference untuk penjemputan: {pickup}
 Tracking Number: {awb}`;
 
+export const SHIPPING_VENDORS: { id: string; label: string; emailName: string }[] = [
+  { id: "fedex", label: "FedEx", emailName: "FedEx" },
+  { id: "ups", label: "UPS - Exsis", emailName: "UPS" },
+  { id: "dhl", label: "DHL - Next", emailName: "DHL" },
+  { id: "rayspeed", label: "Rayspeed", emailName: "Rayspeed" },
+  { id: "tlx", label: "TLX", emailName: "TLX" },
+  { id: "aramex", label: "Aramex", emailName: "Aramex" },
+];
+
+export const EXPORT_EMAIL_SUBJECT = `{awb} / Pengiriman {kodeAsal}-{kodeNegara} / {namaLengkap}`;
+
+export const EXPORT_EMAIL_BODY = `Dear kak {nama},
+
+Kami ingin menginformasikan bahwa paket Kak {nama} sudah kami terima dengan aman dan telah diukur ulang di kantor kami. Berikut resi yang dapat digunakan untuk melacak paket selama pengiriman ke {negara} via {vendor}. Paket akan dipickup pada {tanggalPickup}, di kantor kami.
+
+Seluruh dokumen yang diperlukan untuk proses ekspor saat ini sudah kami terima. Apabila pihak Bea Cukai {negara} meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.`;
+
 // ============================================================================
 // CURRENCY LIST (Currency Converter)
 // Tempel di AKHIR src/content/data.ts.
