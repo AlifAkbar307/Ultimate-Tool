@@ -827,7 +827,7 @@ export const SHIPPING_VENDORS: { id: string; label: string; emailName: string }[
 
 export const EXPORT_EMAIL_SUBJECT = `{awb} / Pengiriman {kodeAsal}-{kodeNegara} / {namaLengkap}`;
 
-export const EXPORT_EMAIL_BODY = `Dear kak {nama},
+export const EXPORT_EMAIL_BODY = `*Dear kak {nama},*
 
 Kami ingin menginformasikan bahwa paket Kak {nama} sudah kami terima dengan aman dan telah diukur ulang di kantor kami. Berikut resi yang dapat digunakan untuk melacak paket selama pengiriman ke {negara} via {vendor}. Paket akan dipickup pada {tanggalPickup}, di kantor kami.
 
@@ -842,7 +842,7 @@ Informasi Penjemputan
 Request penjemputan Anda telah berhasil dibooking melalui sistem FedEx.
 Mohon diperhatikan agar resi yang telah kami kirimkan dapat diprint dan ditempel di masing-masing paket, sebelum kurir tiba.
 Untuk instruksi lebih lengkapnya, silahkan periksa email Anda dengan mencari nomor resi pada subyek email yang telah kami kirimkan.
-Nomor resi Anda: {awb}
+Nomor resi Anda: *{awb}*
 Terima kasih
 --
 Hi kak, mohon dibantu agar prosesnya pickup lancar bisa dibantu utk hubungi CS FedEx di {negara} di hari penjemputan ya kak.
@@ -850,8 +850,8 @@ Bisa dibantu hubungi CS FedEx di {negara}: {telepon}
 Ketika tersambung, mohon minta utk disambungkan ke Customer Service Agent.
 Lalu, apabila sudah tersambung mohon infokan nomor pickup dibawah ini dan tanyakan statusnya apakah masih on schedule / tidak.
 Mohon sebutkan:
-Booking Reference untuk penjemputan: {pickup}
-Tracking Number: {awb}`;
+Booking Reference untuk penjemputan: *{pickup}*
+Tracking Number: *{awb}*`;
 
 // ============================================================================
 // CURRENCY LIST (Currency Converter)
