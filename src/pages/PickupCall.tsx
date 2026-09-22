@@ -37,7 +37,7 @@ import {
   EXPORT_EMAIL_SUBJECT,
   EXPORT_EMAIL_BODY,
 } from "../content/data";
-import { copyWithMentions, mentionToPlain } from "../lib/mention";
+import { copyWithMentions, copyRichText, mentionToPlain, stripBoldMarkers } from "../lib/mention";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -335,6 +335,7 @@ function EmailExportTab() {
       ? `Nomor resi terbaca ${awbDigits} digit — terlalu pendek. Kemungkinan paste-nya kepotong.`
       : null;
 
+  /** Subjek sengaja teks polos: kotak subjek email tidak menerima format. */
   const plainCopy = async (text: string): Promise<boolean> => {
     try {
       await navigator.clipboard.writeText(text);
@@ -454,7 +455,7 @@ function EmailExportTab() {
             testId="export-copy-body"
             disabled={!ready}
             label="Salin isi"
-            onCopy={() => plainCopy(body)}
+            onCopy={() => copyRichText(body)}
           />
         </div>
         {ready ? (
@@ -465,7 +466,7 @@ function EmailExportTab() {
             data-testid="export-body"
             className="px-5 py-4 rounded-xl border border-[#1e1e1e]/10 bg-white text-sm text-[#1e1e1e] whitespace-pre-wrap leading-relaxed font-sans"
           >
-            {body}
+            {stripBoldMarkers(body)}
           </motion.pre>
         ) : (
           <EmptyBox text="Lengkapi semua field untuk melihat isi email." />
