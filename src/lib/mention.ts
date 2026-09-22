@@ -27,16 +27,37 @@ export function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/**
+ * *teks* -> <strong>teks</strong>.
+ *
+ * Dijalankan SESUDAH escapeHtml, supaya isi template tidak bisa menyuntikkan
+ * markup sendiri — satu-satunya HTML yang boleh lahir dari teks adalah ini.
+ *
+ * Pasangan bintang tidak boleh menyeberang baris. Itu yang membuat daftar
+ * bergaya "* Booking Reference" di awal baris tidak ikut menebal, dan bintang
+ * tunggal (perkalian) dibiarkan apa adanya.
+ */
+function boldify(escaped: string): string {
+  return escaped.replace(/\*([^*\n]+)\*/g, "<strong>$1</strong>");
+}
+
+/** Buang penanda *...* — untuk preview di layar dan fallback teks polos. */
+export function stripBoldMarkers(text: string): string {
+  return text.replace(/\*([^*\n]+)\*/g, "$1");
+}
+
 export function hasMention(text: string): boolean {
   return MENTION_TOKEN.test(text);
 }
 
 /** Plain-text version — used for on-screen preview and as the clipboard fallback. */
 export function mentionToPlain(text: string): string {
-  return text.replace(MENTION_TOKEN_G, (whole, key: string) => {
-    const m = MENTION_IDS[key.toLowerCase()];
-    return m ? `@${m.username}` : whole;
-  });
+  return stripBoldMarkers(
+    text.replace(MENTION_TOKEN_G, (whole, key: string) => {
+      const m = MENTION_IDS[key.toLowerCase()];
+      return m ? `@${m.username}` : whole;
+    })
+  );
 }
 
 /** HTML version — Jira reads this and builds a real mention node. */
@@ -48,7 +69,44 @@ export function mentionToHtml(text: string): string {
       return `<span data-prosemirror-content-type="node" data-prosemirror-node-name="mention" data-prosemirror-node-inline="true" data-mention-id="${m.id}" contenteditable="false">@${escapeHtml(m.username)}</span>`;
     })
     .replace(/\n/g, "<br>");
-  return `<p data-pm-slice="1 1 []">${body}</p>`;
+  return `<p data-pm-slice="1 1 []">${boldify(body)}</p>`;
+}
+
+/**
+ * Salin teks berformat untuk email (Gmail / Outlook), bukan Jira.
+ *
+ * Bedanya dengan mentionToHtml: tidak ada mention, tidak ada atribut
+ * ProseMirror, dan baris kosong jadi PARAGRAF terpisah — di email jeda antar
+ * paragraf itu wajar, sementara <br> beruntun membuatnya rapat dan sesak.
+ *
+ * text/plain tetap ikut ditulis, supaya menempel ke aplikasi yang tidak
+ * membaca HTML tetap menghasilkan teks yang masuk akal.
+ */
+export async function copyRichText(text: string): Promise<boolean> {
+  const plain = stripBoldMarkers(text);
+  const html = text
+    .split(/\n{2,}/)
+    .map((block) => `<p>${boldify(escapeHtml(block)).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([plain], { type: "text/plain" }),
+      }),
+    ]);
+    return true;
+  } catch {
+    // Rich clipboard ditolak (butuh HTTPS) — jatuh ke teks polos.
+  }
+
+  try {
+    await navigator.clipboard.writeText(plain);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
