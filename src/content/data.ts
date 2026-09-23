@@ -919,10 +919,9 @@ export const IMPORT_SCHEMES: ImportScheme[] = [
     intro: `*Dear Kak {nama},*
 
 Mohon dibantu ikuti instruksi dibawah ini untuk persiapan penjemputan barang pada {tanggalPickup}, Pukul {jamPickup} (waktu setempat).
-Semua dokumen yang dibutuhkan untuk keperluan Impor sudah kami terima.
+Semua dokumen yang dibutuhkan untuk keperluan Impor sudah kami terima. Apabila pihak Bea Cukai Indonesia meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.
 
 *Berikut instruksinya:*`,
-    outro: `Apabila pihak Bea Cukai Indonesia meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.`,
     docs: [
       { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_SOFTCOPY, received: true },
       { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", received: true },
