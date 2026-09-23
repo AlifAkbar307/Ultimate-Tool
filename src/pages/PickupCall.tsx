@@ -37,10 +37,10 @@ import {
   EXPORT_EMAIL_SUBJECT,
   EXPORT_EMAIL_BODY,
   PICKUP_WINDOWS,
-  IMPORT_DOCS_PINDAHAN,
+  IMPORT_SCHEMES,
   IMPORT_EMAIL_SUBJECT,
-  IMPORT_EMAIL_INTRO,
   IMPORT_IMAGE_URL,
+  IMPORT_IMAGE_ALT,
   type ImportDoc,
 } from "../content/data";
 import {
@@ -148,6 +148,27 @@ const inputClass =
 
 const labelClass = "text-sm font-semibold text-[#1e1e1e] mb-2";
 
+/**
+ * Chevron sendiri, bukan bawaan <select>.
+ *
+ * Posisi panah bawaan ditentukan browser dan selalu menempel di tepi kanan —
+ * pada field selebar ini jadi terlihat terlalu jauh. `appearance-none` mematikan
+ * panah bawaan, lalu chevron digambar sebagai background yang posisinya bisa
+ * diatur. Ini hanya mengubah kotak tertutupnya; daftar dropdown yang terbuka
+ * tetap milik browser dan memang tidak bisa di-CSS (DESIGN.md §3).
+ */
+const CHEVRON =
+  "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231e1e1e' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")";
+
+const SELECT_STYLE: React.CSSProperties = {
+  backgroundImage: CHEVRON,
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 14px center",
+  backgroundSize: "11px",
+};
+
+const selectClass = `${inputClass} appearance-none pr-10 cursor-pointer`;
+
 function CopyButton({
   onCopy,
   disabled,
@@ -178,8 +199,8 @@ function CopyButton({
       onClick={handle}
       disabled={disabled}
       data-testid={testId}
-      className="h-9 px-5 rounded-md text-[#1e1e1e] font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-default"
-      style={{ backgroundColor: copied ? "#c1ff00" : "var(--hub-accent)" }}
+      className="h-9 px-5 rounded-md border border-[#1e1e1e]/15 text-[#1e1e1e] font-semibold text-sm transition-colors disabled:opacity-30 disabled:cursor-default"
+      style={{ backgroundColor: copied ? "#c1ff00" : "white" }}
     >
       {failed ? "Gagal" : copied ? "Tersalin!" : label}
     </button>
@@ -232,7 +253,8 @@ function ChatPickupTab() {
             value={countryName}
             onChange={(e) => setCountryName(e.target.value)}
             data-testid="pickup-country"
-            className={inputClass}
+            className={selectClass}
+            style={SELECT_STYLE}
           >
             <option value="">&mdash; pilih negara &mdash;</option>
             {withPhone.map((c) => (
@@ -390,7 +412,8 @@ function EmailExportTab() {
             value={countryName}
             onChange={(e) => setCountryName(e.target.value)}
             data-testid="export-country"
-            className={inputClass}
+            className={selectClass}
+            style={SELECT_STYLE}
           >
             <option value="">&mdash; pilih negara &mdash;</option>
             {destinations.map((c) => (
@@ -423,7 +446,8 @@ function EmailExportTab() {
             value={vendorId}
             onChange={(e) => setVendorId(e.target.value)}
             data-testid="export-vendor"
-            className={inputClass}
+            className={selectClass}
+            style={SELECT_STYLE}
           >
             {SHIPPING_VENDORS.map((v) => (
               <option key={v.id} value={v.id}>
@@ -527,16 +551,15 @@ const CELL = "border:1px solid #1e1e1e;padding:6px 8px;vertical-align:middle;";
  * dan kelas CSS dari konten yang ditempel, jadi semua gaya harus menempel di
  * elemennya masing-masing supaya garis dan warna status bertahan.
  */
-function buildDocTableHtml(docs: ImportDoc[], received: boolean[], boxNote: string): string {
+function buildDocTableHtml(docs: ImportDoc[], boxNote: string): string {
   const head = ["No", "Nama Dokumen", "Keterangan", "Status Dokumen"]
     .map((h) => `<th style="${CELL}background:#f2f2f2;text-align:center;">${h}</th>`)
     .join("");
   const rows = docs
     .map((d, i) => {
       const note = d.note === "{instruksiBox}" ? boxNote : d.note;
-      const ok = received[i];
-      const status = ok ? "Received" : "Not Received";
-      const color = ok ? GREEN : RED;
+      const status = d.received ? "Received" : "Not Received";
+      const color = d.received ? GREEN : RED;
       return (
         "<tr>" +
         `<td style="${CELL}text-align:center;">${i + 1}</td>` +
@@ -554,26 +577,36 @@ function buildDocTableHtml(docs: ImportDoc[], received: boolean[], boxNote: stri
 }
 
 /** Versi teks polos tabel — fallback kalau HTML ditolak. */
-function buildDocTablePlain(docs: ImportDoc[], received: boolean[], boxNote: string): string {
+function buildDocTablePlain(docs: ImportDoc[], boxNote: string): string {
   return docs
     .map((d, i) => {
       const note = d.note === "{instruksiBox}" ? boxNote : d.note;
-      const status = received[i] ? "Received" : "Not Received";
+      const status = d.received ? "Received" : "Not Received";
       return `${i + 1}. ${d.name} [${status}]\n${note}`;
     })
     .join("\n\n");
 }
 
 function EmailImportTab() {
-  const docs = IMPORT_DOCS_PINDAHAN;
-
+  const [schemeId, setSchemeId] = useState(IMPORT_SCHEMES[0]?.id ?? "");
   const [countryName, setCountryName] = useState("");
   const [ticket, setTicket] = useState("");
   const [tanggal, setTanggal] = useState("");
   const [jam, setJam] = useState(PICKUP_WINDOWS[0] ?? "");
   const [boxInput, setBoxInput] = useState("1");
-  const [withImage, setWithImage] = useState(true);
-  const [received, setReceived] = useState<boolean[]>(() => docs.map((d) => d.defaultReceived));
+
+  const scheme = IMPORT_SCHEMES.find((sc) => sc.id === schemeId) ?? IMPORT_SCHEMES[0];
+  const docs = scheme.docs;
+
+  // Rentang poin dihitung dari daftar dokumen, bukan diketik di teks narasi.
+  // Dokumen bertanda `signed` adalah surat yang dikirim balik setelah
+  // ditandatangani; sisanya dokumen yang dikirim customer. Kalau suatu saat
+  // ada dokumen ditambah atau dihapus, angka di narasi ikut benar sendiri.
+  const jumlahDokumen = docs.filter((d) => !d.signed).length;
+  const jumlahSurat = docs.length - jumlahDokumen;
+  const poinDokumen = jumlahDokumen > 0 ? `1-${jumlahDokumen}` : "";
+  const poinSurat =
+    jumlahSurat > 0 ? `${jumlahDokumen + 1}-${docs.length}` : "";
 
   const { awb, nama: namaLengkap } = parseTicket(ticket);
 
@@ -598,22 +631,29 @@ function EmailImportTab() {
     text = replaceAll(text, "{nama}", firstName(namaLengkap));
     text = replaceAll(text, "{tanggalPickup}", formatTanggal(tanggal));
     text = replaceAll(text, "{jamPickup}", jam);
+    text = replaceAll(text, "{poinDokumen}", poinDokumen);
+    text = replaceAll(text, "{poinSurat}", poinSurat);
     return text;
   };
 
   const subject = ready ? fill(IMPORT_EMAIL_SUBJECT) : "";
-  const intro = ready ? fill(IMPORT_EMAIL_INTRO) : "";
-
-  const toggle = (i: number) =>
-    setReceived((prev) => prev.map((v, k) => (k === i ? !v : v)));
+  const intro = ready ? fill(scheme.intro) : "";
+  const outro = ready && scheme.outro ? fill(scheme.outro) : "";
 
   const copyBody = async (): Promise<boolean> => {
-    const imageHtml = withImage
-      ? `<p><img src="${IMPORT_IMAGE_URL}" alt="H Taping Method" style="max-width:560px;" /></p>`
-      : "";
-    const html = textToHtml(intro) + buildDocTableHtml(docs, received, boxNote) + imageHtml;
+    const imageHtml = `<p><img src="${IMPORT_IMAGE_URL}" alt="${escapeHtml(
+      IMPORT_IMAGE_ALT
+    )}" style="max-width:560px;" /></p>`;
+    const html =
+      textToHtml(intro) +
+      buildDocTableHtml(docs, boxNote) +
+      (outro ? textToHtml(outro) : "") +
+      imageHtml;
     const plain =
-      stripBoldMarkers(intro) + "\n\n" + buildDocTablePlain(docs, received, boxNote);
+      stripBoldMarkers(intro) +
+      "\n\n" +
+      buildDocTablePlain(docs, boxNote) +
+      (outro ? "\n\n" + stripBoldMarkers(outro) : "");
     return copyHtml(html, plain);
   };
 
@@ -628,9 +668,22 @@ function EmailImportTab() {
 
   return (
     <>
-      <p className="mb-6 text-xs font-semibold uppercase tracking-wide text-[#1e1e1e]/55">
-        Skema: Barang Pindahan
-      </p>
+      <div className="flex flex-col mb-4 md:max-w-xs">
+        <label className={labelClass}>Skema</label>
+        <select
+          value={schemeId}
+          onChange={(e) => setSchemeId(e.target.value)}
+          data-testid="import-scheme"
+          className={selectClass}
+          style={SELECT_STYLE}
+        >
+          {IMPORT_SCHEMES.map((sc) => (
+            <option key={sc.id} value={sc.id}>
+              {sc.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col">
@@ -655,7 +708,8 @@ function EmailImportTab() {
             value={countryName}
             onChange={(e) => setCountryName(e.target.value)}
             data-testid="import-country"
-            className={inputClass}
+            className={selectClass}
+            style={SELECT_STYLE}
           >
             <option value="">&mdash; pilih negara &mdash;</option>
             {origins.map((c) => (
@@ -670,7 +724,11 @@ function EmailImportTab() {
             </p>
           )}
         </div>
+      </div>
 
+      {/* Tiga field pendek dalam satu baris; tepi kiri-kanannya tetap sejajar
+          dengan baris di atas karena keduanya grid selebar penuh. */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <div className="flex flex-col">
           <label className={labelClass}>Tanggal pickup</label>
           <input
@@ -693,7 +751,8 @@ function EmailImportTab() {
             value={jam}
             onChange={(e) => setJam(e.target.value)}
             data-testid="import-jam"
-            className={inputClass}
+            className={selectClass}
+            style={SELECT_STYLE}
           >
             {PICKUP_WINDOWS.map((w) => (
               <option key={w} value={w}>
@@ -719,46 +778,6 @@ function EmailImportTab() {
               Jumlah box harus bilangan bulat 1&ndash;{MAX_BOXES}.
             </p>
           )}
-        </div>
-
-        <div className="flex flex-col justify-end">
-          <label className="flex items-center gap-2 h-10 text-sm text-[#1e1e1e] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={withImage}
-              onChange={(e) => setWithImage(e.target.checked)}
-              data-testid="import-with-image"
-            />
-            Sertakan gambar H-Taping
-          </label>
-        </div>
-      </div>
-
-      {/* ── Status dokumen ─────────────────────────────────────────────── */}
-      <div className="mt-8">
-        <h2 className="text-sm font-semibold text-[#1e1e1e] mb-2">Status dokumen</h2>
-        <div className="rounded-xl border border-[#1e1e1e]/10 divide-y divide-[#1e1e1e]/10">
-          {docs.map((d, i) => (
-            <label
-              key={d.name}
-              className="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-[#f2f2f2]"
-            >
-              <input
-                type="checkbox"
-                checked={received[i]}
-                onChange={() => toggle(i)}
-                data-testid={`import-doc-${i + 1}`}
-              />
-              <span className="w-6 text-[#1e1e1e]/45">{i + 1}</span>
-              <span className="flex-1 text-[#1e1e1e]">{d.name}</span>
-              <span
-                className="text-xs font-semibold"
-                style={{ color: received[i] ? GREEN : RED }}
-              >
-                {received[i] ? "Received" : "Not Received"}
-              </span>
-            </label>
-          ))}
         </div>
       </div>
 
@@ -825,22 +844,25 @@ function EmailImportTab() {
                       </td>
                       <td
                         className="border border-[#1e1e1e]/30 px-2 py-1.5 text-center font-semibold"
-                        style={{ color: received[i] ? GREEN : RED }}
+                        style={{ color: d.received ? GREEN : RED }}
                       >
-                        {received[i] ? "Received" : "Not Received"}
+                        {d.received ? "Received" : "Not Received"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            {withImage && (
-              <img
-                src={IMPORT_IMAGE_URL}
-                alt="H Taping Method"
-                className="mt-4 max-w-sm rounded-lg border border-[#1e1e1e]/10"
-              />
+            {outro !== "" && (
+              <pre className="whitespace-pre-wrap leading-relaxed font-sans mt-4">
+                {stripBoldMarkers(outro)}
+              </pre>
             )}
+            <img
+              src={IMPORT_IMAGE_URL}
+              alt={IMPORT_IMAGE_ALT}
+              className="mt-4 max-w-sm rounded-lg border border-[#1e1e1e]/10"
+            />
           </motion.div>
         ) : (
           <EmptyBox text="Lengkapi tiket, negara, tanggal, dan jumlah box untuk melihat email." />
@@ -870,7 +892,10 @@ export function PickupCall() {
         Template chat penjemputan dan email pemberitahuan resi. Isi field, salin, tempel.
       </p>
 
-      <div className="inline-flex gap-1 p-1 rounded-full bg-[#f0f0f0] mb-8">
+      <div
+        className="inline-flex gap-1 p-1 rounded-full bg-[#f0f0f0] mb-8"
+        style={{ boxShadow: "inset 0 1px 3px rgba(30,30,30,0.12)" }}
+      >
         {SUB_TABS.map((t) => (
           <button
             key={t.id}
