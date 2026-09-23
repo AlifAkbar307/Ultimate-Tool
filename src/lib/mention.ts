@@ -83,12 +83,26 @@ export function mentionToHtml(text: string): string {
  * membaca HTML tetap menghasilkan teks yang masuk akal.
  */
 export async function copyRichText(text: string): Promise<boolean> {
-  const plain = stripBoldMarkers(text);
-  const html = text
+  return copyHtml(textToHtml(text), stripBoldMarkers(text));
+}
+
+/**
+ * Teks template -> HTML email: baris kosong jadi paragraf, *teks* jadi tebal,
+ * newline tunggal jadi <br>. Diekspor supaya bisa digabung dengan HTML lain
+ * (tabel, gambar) dalam satu salinan.
+ */
+export function textToHtml(text: string): string {
+  return text
     .split(/\n{2,}/)
     .map((block) => `<p>${boldify(escapeHtml(block)).replace(/\n/g, "<br>")}</p>`)
     .join("");
+}
 
+/**
+ * Salin HTML yang sudah jadi, beserta versi teks polosnya.
+ * Dipakai untuk isi yang tidak bisa diwakili template teks — tabel, gambar.
+ */
+export async function copyHtml(html: string, plain: string): Promise<boolean> {
   try {
     await navigator.clipboard.write([
       new ClipboardItem({
