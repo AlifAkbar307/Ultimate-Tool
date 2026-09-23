@@ -787,12 +787,12 @@ Apakah Estimasi biaya tersebut dapat dikonfirmasi kak?`,
 // tetap muncul di Email Export (cuma butuh kode), tapi disembunyikan dari
 // Chat Pickup — menawarkan negara tanpa nomor berarti mengirim customer
 // menelepon ke tempat yang tidak ada.
-export const PICKUP_COUNTRIES: { country: string; code: string; phone?: string }[] = [
+export const PICKUP_COUNTRIES: { country: string; code: string; phone?: string; skipPage?: boolean }[] = [
   { country: "Australia", code: "AU", phone: "13-26-10" },
   { country: "Austria", code: "AT", phone: "0800 289747" },
   { country: "Belgia", code: "BE" },
   { country: "Kanada", code: "CA" },
-  { country: "China", code: "CN" },
+  { country: "China", code: "CN", skipPage: true },
   { country: "Finlandia", code: "FI" },
   { country: "Prancis", code: "FR", phone: "0820 123 800" },
   { country: "Jerman", code: "DE", phone: "01806 111 800" },
@@ -800,18 +800,18 @@ export const PICKUP_COUNTRIES: { country: string; code: string; phone?: string }
   { country: "Indonesia", code: "ID" },
   { country: "Irlandia", code: "IE", phone: "1800 535 800" },
   { country: "Italia", code: "IT" },
-  { country: "Jepang", code: "JP", phone: "0120-003200" },
-  { country: "Malaysia", code: "MY", phone: "1800.88.6363" },
+  { country: "Jepang", code: "JP", phone: "0120-003200", skipPage: true },
+  { country: "Malaysia", code: "MY", phone: "1800.88.6363", skipPage: true },
   { country: "Belanda", code: "NL", phone: "08000222333" },
   { country: "Norwegia", code: "NO", phone: "063 94 03 00" },
-  { country: "Filipina", code: "PH" },
+  { country: "Filipina", code: "PH", skipPage: true },
   { country: "Polandia", code: "PL", phone: "801 420 420" },
-  { country: "Singapura", code: "SG" },
-  { country: "Korea Selatan", code: "KR", phone: "02.3496.7777" },
+  { country: "Singapura", code: "SG", skipPage: true },
+  { country: "Korea Selatan", code: "KR", phone: "02.3496.7777", skipPage: true },
   { country: "Spanyol", code: "ES", phone: "902 100 871" },
   { country: "Swedia", code: "SE", phone: "0200 252 252" },
   { country: "Swiss", code: "CH", phone: "0848 1 33339" },
-  { country: "Thailand", code: "TH" },
+  { country: "Thailand", code: "TH", skipPage: true },
   { country: "Inggris", code: "UK", phone: "03456 07 08 09" },
   { country: "Amerika Serikat", code: "US", phone: "1-800-463-3339" },
 ];
@@ -832,6 +832,51 @@ export const EXPORT_EMAIL_BODY = `*Dear kak {nama},*
 Kami ingin menginformasikan bahwa paket Kak {nama} sudah kami terima dengan aman dan telah diukur ulang di kantor kami. Berikut resi yang dapat digunakan untuk melacak paket selama pengiriman ke {negara} via {vendor}. Paket akan dipickup pada {tanggalPickup}, di kantor kami.
 
 Seluruh dokumen yang diperlukan untuk proses ekspor saat ini sudah kami terima. Apabila pihak Bea Cukai {negara} meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.`;
+
+export const PICKUP_WINDOWS = [
+  "10.00 - 14.00",
+  "11.00 - 15.00",
+  "12.00 - 16.00",
+  "13.00 - 17.00",
+  "14.00 - 18.00",
+];
+
+export interface ImportDoc {
+  name: string;
+  note: string;             // "{instruksiBox}" diisi otomatis dari jumlah box
+  defaultReceived: boolean;
+}
+
+const KIRIM_SOFTCOPY = "1. Kirim softcopy dokumen kepada Rimkirim";
+const TANDA_TANGAN = "1. Tanda tangan\n2. Dikirimkan kembali ke email Rimkirim";
+
+export const IMPORT_DOCS_PINDAHAN: ImportDoc[] = [
+  { name: "Surat Keterangan Pindah", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "Copy of Passport", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "Copy of Flight Ticket", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "LoA / Offer Letter Uni", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", defaultReceived: true },
+  { name: "Copy KTP / E-NPWP", note: KIRIM_SOFTCOPY, defaultReceived: true },
+  { name: "Surat Kuasa PIBK (2001) - Personal", note: TANDA_TANGAN, defaultReceived: false },
+  { name: "Surat Pernyataan Bersedia Membayarkan SPTNP", note: TANDA_TANGAN, defaultReceived: false },
+  { name: "Surat Permohonan Pembebasan Pajak Barang Pindahan", note: TANDA_TANGAN, defaultReceived: false },
+  { name: "Surat Pernyataan Personal Effect", note: TANDA_TANGAN, defaultReceived: false },
+];
+
+export const IMPORT_EMAIL_SUBJECT = `{awb} / Pengiriman {kodeNegara}-{kodeTujuan} / {namaLengkap}`;
+
+export const IMPORT_EMAIL_INTRO = `*Dear kak {nama},*
+
+Mohon dibantu ikuti instruksi dibawah ini (poin 1-7) untuk persiapan penjemputan barang pada {tanggalPickup}, Pukul {jamPickup} (waktu setempat).
+Lalu, dibawah ini poin (1 - 7) adalah daftar dokumen yang telah kami terima dan masih dibutuhkan untuk proses impor di Indonesia.
+
+Untuk poin 8-11 akan kami kirimkan kepada Kak {nama} secepatnya dan mohon untuk ditandatangani saja dan dikirimkan kembali ke email ini (tidak perlu di print).
+
+*Berikut instruksinya:*`;
+
+// Harus URL LENGKAP — email tidak tahu alamat app-mu, jadi path relatif tidak akan termuat.
+export const IMPORT_IMAGE_URL = "https://ultimate-tool-six.vercel.app/h-taping.png";
 
 // Key di sini mengacu ke MENTION_IDS di atas.
 export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
