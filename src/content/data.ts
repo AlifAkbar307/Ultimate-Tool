@@ -876,7 +876,7 @@ Untuk poin 8-11 akan kami kirimkan kepada Kak {nama} secepatnya dan mohon untuk 
 *Berikut instruksinya:*`;
 
 // Harus URL LENGKAP — email tidak tahu alamat app-mu, jadi path relatif tidak akan termuat.
-export const IMPORT_IMAGE_URL = "https://ultimate-tool-six.vercel.app/h-taping.png";
+export const IMPORT_IMAGE_URL = "https://drive.google.com/thumbnail?id=1L2QV2yNJddChqRjtrVm1HozSCE7eTP-4&sz=w1000";
 
 // Key di sini mengacu ke MENTION_IDS di atas.
 export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
