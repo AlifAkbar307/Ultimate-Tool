@@ -841,42 +841,98 @@ export const PICKUP_WINDOWS = [
   "14.00 - 18.00",
 ];
 
-export interface ImportDoc {
-  name: string;
-  note: string;             // "{instruksiBox}" diisi otomatis dari jumlah box
-  defaultReceived: boolean;
-}
-
-const KIRIM_SOFTCOPY = "1. Kirim softcopy dokumen kepada Rimkirim";
-const TANDA_TANGAN = "1. Tanda tangan\n2. Dikirimkan kembali ke email Rimkirim";
-
-export const IMPORT_DOCS_PINDAHAN: ImportDoc[] = [
-  { name: "Surat Keterangan Pindah", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "Copy of Passport", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "Copy of Flight Ticket", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "LoA / Offer Letter Uni", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", defaultReceived: true },
-  { name: "Copy KTP / E-NPWP", note: KIRIM_SOFTCOPY, defaultReceived: true },
-  { name: "Surat Kuasa PIBK (2001) - Personal", note: TANDA_TANGAN, defaultReceived: false },
-  { name: "Surat Pernyataan Bersedia Membayarkan SPTNP", note: TANDA_TANGAN, defaultReceived: false },
-  { name: "Surat Permohonan Pembebasan Pajak Barang Pindahan", note: TANDA_TANGAN, defaultReceived: false },
-  { name: "Surat Pernyataan Personal Effect", note: TANDA_TANGAN, defaultReceived: false },
-];
-
 export const IMPORT_EMAIL_SUBJECT = `{awb} / Pengiriman {kodeNegara}-{kodeTujuan} / {namaLengkap}`;
-
-export const IMPORT_EMAIL_INTRO = `*Dear kak {nama},*
-
-Mohon dibantu ikuti instruksi dibawah ini (poin 1-7) untuk persiapan penjemputan barang pada {tanggalPickup}, Pukul {jamPickup} (waktu setempat).
-Lalu, dibawah ini poin (1 - 7) adalah daftar dokumen yang telah kami terima dan masih dibutuhkan untuk proses impor di Indonesia.
-
-Untuk poin 8-11 akan kami kirimkan kepada Kak {nama} secepatnya dan mohon untuk ditandatangani saja dan dikirimkan kembali ke email ini (tidak perlu di print).
-
-*Berikut instruksinya:*`;
 
 // Harus URL LENGKAP — email tidak tahu alamat app-mu, jadi path relatif tidak akan termuat.
 export const IMPORT_IMAGE_URL = "https://drive.google.com/thumbnail?id=1L2QV2yNJddChqRjtrVm1HozSCE7eTP-4&sz=w1000";
+
+export interface ImportDoc {
+  name: string;
+  note: string;              // "{instruksiBox}" diisi otomatis dari jumlah box
+  received: boolean;         // status tetap; tidak dicentang di UI
+  signed?: boolean;          // surat yang ditandatangani lalu dikirim balik
+}
+
+export interface ImportScheme {
+  id: string;
+  label: string;
+  docs: ImportDoc[];
+  intro: string;
+  outro?: string;            // kalimat penutup setelah tabel & gambar
+}
+
+const KIRIM_SOFTCOPY = "1. Kirim softcopy dokumen kepada Rimkirim";
+const KIRIM_DAN_PRINT =
+  "1. Kirim softcopy dokumen kepada Rimkirim\n2. Print 1x dan serahkan lampirannya ke kurir";
+const TANDA_TANGAN = "1. Tanda tangan\n2. Dikirimkan kembali ke email Rimkirim";
+
+// {poinDokumen} dan {poinSurat} dihitung dari daftar dokumen — jangan diketik
+// angkanya, supaya tetap benar kalau daftarnya berubah.
+const INTRO_STANDAR = `*Dear kak {nama},*
+
+Mohon dibantu ikuti instruksi dibawah ini (poin {poinDokumen}) untuk persiapan penjemputan barang pada {tanggalPickup}, Pukul {jamPickup} (waktu setempat).
+Lalu, dibawah ini (poin {poinDokumen}) adalah daftar dokumen yang telah kami terima dan masih dibutuhkan untuk proses impor di Indonesia.
+
+Untuk dokumen poin {poinSurat} akan kami kirimkan kepada Kak {nama} secepatnya dan mohon untuk ditandatangani saja dan dikirimkan kembali ke email ini (tidak perlu di print).
+
+*Berikut instruksinya:*`;
+
+const suratSurat = (skema: string): ImportDoc[] => [
+  { name: "Surat Kuasa PIBK (2001) - Personal", note: TANDA_TANGAN, received: false, signed: true },
+  { name: "Surat Pernyataan Bersedia Membayarkan SPTNP", note: TANDA_TANGAN, received: false, signed: true },
+  { name: `Surat Permohonan Pembebasan Pajak ${skema}`, note: TANDA_TANGAN, received: false, signed: true },
+  { name: "Surat Pernyataan Personal Effect", note: TANDA_TANGAN, received: false, signed: true },
+];
+
+export const IMPORT_SCHEMES: ImportScheme[] = [
+  {
+    id: "pindahan",
+    label: "Barang Pindahan",
+    intro: INTRO_STANDAR,
+    docs: [
+      { name: "Surat Keterangan Pindah", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copy of Passport", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copy of Flight Ticket", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Proof of Stay (Work, Study, etc.)", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_DAN_PRINT, received: true },
+      { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", received: true },
+      { name: "Copy KTP / E-NPWP", note: KIRIM_SOFTCOPY, received: true },
+      ...suratSurat("Barang Pindahan"),
+    ],
+  },
+  {
+    id: "penumpang",
+    label: "Barang Penumpang",
+    intro: INTRO_STANDAR,
+    docs: [
+      { name: "Copy of Passport", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copy of Flight Ticket", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_DAN_PRINT, received: true },
+      { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", received: true },
+      { name: "Copy KTP / E-NPWP", note: KIRIM_SOFTCOPY, received: true },
+      ...suratSurat("Barang Penumpang"),
+    ],
+  },
+  {
+    id: "kiriman",
+    label: "Barang Kiriman",
+    intro: `*Dear Kak {nama},*
+
+Mohon dibantu ikuti instruksi dibawah ini untuk persiapan penjemputan barang pada {tanggalPickup}, Pukul {jamPickup} (waktu setempat).
+Semua dokumen yang dibutuhkan untuk keperluan Impor sudah kami terima.
+
+*Berikut instruksinya:*`,
+    outro: `Apabila pihak Bea Cukai Indonesia meminta dokumen tambahan, kami akan segera menginformasikannya kepada Kak {nama}.`,
+    docs: [
+      { name: "Copy of Commercial Invoice / Packing List", note: KIRIM_SOFTCOPY, received: true },
+      { name: "Copies of Airwaybill / Resi", note: "{instruksiBox}", received: true },
+      { name: "Copy KTP / E-NPWP", note: KIRIM_SOFTCOPY, received: true },
+    ],
+  },
+];
+
+// Teks pengganti kalau gambar gagal muncul atau diblokir klien email.
+export const IMPORT_IMAGE_ALT = "Metode H-Taping";
 
 // Key di sini mengacu ke MENTION_IDS di atas.
 export const PICKUP_CS_MENTIONS = ["hilma", "dicko", "maritza"];
