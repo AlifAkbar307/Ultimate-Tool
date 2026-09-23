@@ -36,8 +36,22 @@ import {
   SHIPPING_VENDORS,
   EXPORT_EMAIL_SUBJECT,
   EXPORT_EMAIL_BODY,
+  PICKUP_WINDOWS,
+  IMPORT_DOCS_PINDAHAN,
+  IMPORT_EMAIL_SUBJECT,
+  IMPORT_EMAIL_INTRO,
+  IMPORT_IMAGE_URL,
+  type ImportDoc,
 } from "../content/data";
-import { copyWithMentions, copyRichText, mentionToPlain, stripBoldMarkers } from "../lib/mention";
+import {
+  copyWithMentions,
+  copyRichText,
+  copyHtml,
+  textToHtml,
+  escapeHtml,
+  mentionToPlain,
+  stripBoldMarkers,
+} from "../lib/mention";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -55,12 +69,18 @@ const ORIGIN_CODE = "ID";
 
 const RED = "#dc2626";
 
-type SubTab = "chat" | "export";
+type SubTab = "chat" | "export" | "import";
 
 const SUB_TABS: { id: SubTab; label: string }[] = [
   { id: "chat", label: "Chat Pickup" },
   { id: "export", label: "Email Export" },
+  { id: "import", label: "Email Import" },
 ];
+
+/** Batas jumlah box yang masuk akal — mencegah salah ketik 150 jadi 1500 baris. */
+const MAX_BOXES = 60;
+
+const GREEN = "#16a34a";
 
 // ── LOGIC ───────────────────────────────────────────────────────────────────
 
@@ -476,6 +496,360 @@ function EmailExportTab() {
   );
 }
 
+// ── TAB: Email Import ───────────────────────────────────────────────────────
+
+/**
+ * Instruksi tempel resi untuk sel "Copies of Airwaybill / Resi".
+ *
+ * Normal: box ke-k dapat halaman k.
+ * Negara dengan skipPage (Asia): halaman 2 adalah halaman sisipan, jadi box 1
+ * dapat halaman 1, lalu box ke-k (k >= 2) dapat halaman k+1.
+ *
+ * Diverifikasi ke contoh nyata: 1 box normal -> "(page 1)", 3 box Asia ->
+ * "(page 1-4)" dengan box 2 = hal 3, 15 box normal -> "(page 1-15)".
+ * Satu box yang tersisa belum terbukti: 1 box Asia -> "(page 1-2)".
+ */
+function buildBoxInstructions(boxes: number, skipPage: boolean): string {
+  const total = skipPage ? boxes + 1 : boxes;
+  const range = total === 1 ? "page 1" : `page 1-${total}`;
+  const lines = ["Print 2x", `1. Serahkan 1 lampiran kepada kurir yang menjemput (${range}).`];
+  for (let k = 1; k <= boxes; k++) {
+    const page = skipPage && k >= 2 ? k + 1 : k;
+    lines.push(`${k + 1}. Tempel lampiran hardcopy resi halaman ${page} (page ${page}) pada box kiriman ke-${k}.`);
+  }
+  return lines.join("\n");
+}
+
+const CELL = "border:1px solid #1e1e1e;padding:6px 8px;vertical-align:middle;";
+
+/**
+ * Tabel dokumen sebagai HTML dengan gaya INLINE. Gmail membuang blok <style>
+ * dan kelas CSS dari konten yang ditempel, jadi semua gaya harus menempel di
+ * elemennya masing-masing supaya garis dan warna status bertahan.
+ */
+function buildDocTableHtml(docs: ImportDoc[], received: boolean[], boxNote: string): string {
+  const head = ["No", "Nama Dokumen", "Keterangan", "Status Dokumen"]
+    .map((h) => `<th style="${CELL}background:#f2f2f2;text-align:center;">${h}</th>`)
+    .join("");
+  const rows = docs
+    .map((d, i) => {
+      const note = d.note === "{instruksiBox}" ? boxNote : d.note;
+      const ok = received[i];
+      const status = ok ? "Received" : "Not Received";
+      const color = ok ? GREEN : RED;
+      return (
+        "<tr>" +
+        `<td style="${CELL}text-align:center;">${i + 1}</td>` +
+        `<td style="${CELL}">${escapeHtml(d.name)}</td>` +
+        `<td style="${CELL}">${escapeHtml(note).replace(/\n/g, "<br>")}</td>` +
+        `<td style="${CELL}text-align:center;color:${color};">${status}</td>` +
+        "</tr>"
+      );
+    })
+    .join("");
+  return (
+    `<table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">` +
+    `<thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`
+  );
+}
+
+/** Versi teks polos tabel — fallback kalau HTML ditolak. */
+function buildDocTablePlain(docs: ImportDoc[], received: boolean[], boxNote: string): string {
+  return docs
+    .map((d, i) => {
+      const note = d.note === "{instruksiBox}" ? boxNote : d.note;
+      const status = received[i] ? "Received" : "Not Received";
+      return `${i + 1}. ${d.name} [${status}]\n${note}`;
+    })
+    .join("\n\n");
+}
+
+function EmailImportTab() {
+  const docs = IMPORT_DOCS_PINDAHAN;
+
+  const [countryName, setCountryName] = useState("");
+  const [ticket, setTicket] = useState("");
+  const [tanggal, setTanggal] = useState("");
+  const [jam, setJam] = useState(PICKUP_WINDOWS[0] ?? "");
+  const [boxInput, setBoxInput] = useState("1");
+  const [withImage, setWithImage] = useState(true);
+  const [received, setReceived] = useState<boolean[]>(() => docs.map((d) => d.defaultReceived));
+
+  const { awb, nama: namaLengkap } = parseTicket(ticket);
+
+  // Negara asal impor — Indonesia tidak bisa jadi asal kiriman ke Indonesia.
+  const origins = COUNTRIES_SORTED.filter((c) => c.code !== ORIGIN_CODE);
+  const selected = origins.find((c) => c.country === countryName);
+
+  const boxes = Number(boxInput);
+  const boxesValid = Number.isInteger(boxes) && boxes >= 1 && boxes <= MAX_BOXES;
+
+  const ready =
+    Boolean(selected) && awb !== "" && namaLengkap !== "" && tanggal !== "" && boxesValid;
+
+  const boxNote = boxesValid ? buildBoxInstructions(boxes, Boolean(selected?.skipPage)) : "";
+
+  const fill = (template: string): string => {
+    let text = template;
+    text = replaceAll(text, "{awb}", awb);
+    text = replaceAll(text, "{kodeNegara}", selected?.code ?? "");
+    text = replaceAll(text, "{kodeTujuan}", ORIGIN_CODE);
+    text = replaceAll(text, "{namaLengkap}", namaLengkap);
+    text = replaceAll(text, "{nama}", firstName(namaLengkap));
+    text = replaceAll(text, "{tanggalPickup}", formatTanggal(tanggal));
+    text = replaceAll(text, "{jamPickup}", jam);
+    return text;
+  };
+
+  const subject = ready ? fill(IMPORT_EMAIL_SUBJECT) : "";
+  const intro = ready ? fill(IMPORT_EMAIL_INTRO) : "";
+
+  const toggle = (i: number) =>
+    setReceived((prev) => prev.map((v, k) => (k === i ? !v : v)));
+
+  const copyBody = async (): Promise<boolean> => {
+    const imageHtml = withImage
+      ? `<p><img src="${IMPORT_IMAGE_URL}" alt="H Taping Method" style="max-width:560px;" /></p>`
+      : "";
+    const html = textToHtml(intro) + buildDocTableHtml(docs, received, boxNote) + imageHtml;
+    const plain =
+      stripBoldMarkers(intro) + "\n\n" + buildDocTablePlain(docs, received, boxNote);
+    return copyHtml(html, plain);
+  };
+
+  const plainCopy = async (text: string): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  return (
+    <>
+      <p className="mb-6 text-xs font-semibold uppercase tracking-wide text-[#1e1e1e]/55">
+        Skema: Barang Pindahan
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col">
+          <label className={labelClass}>Judul tiket Jira</label>
+          <input
+            value={ticket}
+            onChange={(e) => setTicket(e.target.value)}
+            data-testid="import-ticket"
+            placeholder="877341074702 / Abdul Aziiz Nugraha"
+            className={inputClass}
+          />
+          {(awb !== "" || namaLengkap !== "") && (
+            <p className="mt-1.5 text-xs text-[#1e1e1e]/55">
+              Resi {awb || "\u2014"} &middot; sapaan: kak {firstName(namaLengkap) || "\u2014"}
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col">
+          <label className={labelClass}>Negara asal</label>
+          <select
+            value={countryName}
+            onChange={(e) => setCountryName(e.target.value)}
+            data-testid="import-country"
+            className={inputClass}
+          >
+            <option value="">&mdash; pilih negara &mdash;</option>
+            {origins.map((c) => (
+              <option key={c.code} value={c.country}>
+                {c.country} ({c.code})
+              </option>
+            ))}
+          </select>
+          {selected?.skipPage && (
+            <p className="mt-1.5 text-xs text-[#1e1e1e]/55">
+              Ada halaman sisipan di posisi 2 &mdash; nomor halaman box bergeser.
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col">
+          <label className={labelClass}>Tanggal pickup</label>
+          <input
+            type="date"
+            value={tanggal}
+            onChange={(e) => setTanggal(e.target.value)}
+            onClick={(e) => openDatePicker(e.currentTarget)}
+            onFocus={(e) => openDatePicker(e.currentTarget)}
+            data-testid="import-tanggal"
+            className={`${inputClass} cursor-pointer`}
+          />
+          {tanggal !== "" && (
+            <p className="mt-1.5 text-xs text-[#1e1e1e]/55">{formatTanggal(tanggal)}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col">
+          <label className={labelClass}>Jam pickup</label>
+          <select
+            value={jam}
+            onChange={(e) => setJam(e.target.value)}
+            data-testid="import-jam"
+            className={inputClass}
+          >
+            {PICKUP_WINDOWS.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col">
+          <label className={labelClass}>Jumlah box</label>
+          <input
+            type="number"
+            min={1}
+            max={MAX_BOXES}
+            value={boxInput}
+            onChange={(e) => setBoxInput(e.target.value)}
+            data-testid="import-boxes"
+            className={inputClass}
+          />
+          {boxInput !== "" && !boxesValid && (
+            <p className="mt-1.5 text-xs font-medium" style={{ color: RED }}>
+              Jumlah box harus bilangan bulat 1&ndash;{MAX_BOXES}.
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-col justify-end">
+          <label className="flex items-center gap-2 h-10 text-sm text-[#1e1e1e] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={withImage}
+              onChange={(e) => setWithImage(e.target.checked)}
+              data-testid="import-with-image"
+            />
+            Sertakan gambar H-Taping
+          </label>
+        </div>
+      </div>
+
+      {/* ── Status dokumen ─────────────────────────────────────────────── */}
+      <div className="mt-8">
+        <h2 className="text-sm font-semibold text-[#1e1e1e] mb-2">Status dokumen</h2>
+        <div className="rounded-xl border border-[#1e1e1e]/10 divide-y divide-[#1e1e1e]/10">
+          {docs.map((d, i) => (
+            <label
+              key={d.name}
+              className="flex items-center gap-3 px-4 py-2 text-sm cursor-pointer hover:bg-[#f2f2f2]"
+            >
+              <input
+                type="checkbox"
+                checked={received[i]}
+                onChange={() => toggle(i)}
+                data-testid={`import-doc-${i + 1}`}
+              />
+              <span className="w-6 text-[#1e1e1e]/45">{i + 1}</span>
+              <span className="flex-1 text-[#1e1e1e]">{d.name}</span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: received[i] ? GREEN : RED }}
+              >
+                {received[i] ? "Received" : "Not Received"}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Subjek ─────────────────────────────────────────────────────── */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold text-[#1e1e1e]">Subjek</h2>
+          <CopyButton
+            testId="import-copy-subject"
+            disabled={!ready}
+            label="Salin subjek"
+            onCopy={() => plainCopy(subject)}
+          />
+        </div>
+        {ready ? (
+          <p className="px-5 py-3 rounded-xl border border-[#1e1e1e]/10 bg-white text-sm text-[#1e1e1e] font-mono">
+            {subject}
+          </p>
+        ) : (
+          <EmptyBox text="Lengkapi semua field untuk melihat subjek." />
+        )}
+      </div>
+
+      {/* ── Isi email ──────────────────────────────────────────────────── */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-semibold text-[#1e1e1e]">Isi email</h2>
+          <CopyButton
+            testId="import-copy-body"
+            disabled={!ready}
+            label="Salin isi"
+            onCopy={copyBody}
+          />
+        </div>
+
+        {ready ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="px-5 py-4 rounded-xl border border-[#1e1e1e]/10 bg-white text-sm text-[#1e1e1e]"
+          >
+            <pre className="whitespace-pre-wrap leading-relaxed font-sans mb-4">
+              {stripBoldMarkers(intro)}
+            </pre>
+            <div className="overflow-x-auto">
+              <table className="border-collapse text-xs">
+                <thead>
+                  <tr>
+                    {["No", "Nama Dokumen", "Keterangan", "Status"].map((h) => (
+                      <th key={h} className="border border-[#1e1e1e]/30 bg-[#f2f2f2] px-2 py-1.5">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {docs.map((d, i) => (
+                    <tr key={d.name}>
+                      <td className="border border-[#1e1e1e]/30 px-2 py-1.5 text-center">{i + 1}</td>
+                      <td className="border border-[#1e1e1e]/30 px-2 py-1.5">{d.name}</td>
+                      <td className="border border-[#1e1e1e]/30 px-2 py-1.5 whitespace-pre-line">
+                        {d.note === "{instruksiBox}" ? boxNote : d.note}
+                      </td>
+                      <td
+                        className="border border-[#1e1e1e]/30 px-2 py-1.5 text-center font-semibold"
+                        style={{ color: received[i] ? GREEN : RED }}
+                      >
+                        {received[i] ? "Received" : "Not Received"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {withImage && (
+              <img
+                src={IMPORT_IMAGE_URL}
+                alt="H Taping Method"
+                className="mt-4 max-w-sm rounded-lg border border-[#1e1e1e]/10"
+              />
+            )}
+          </motion.div>
+        ) : (
+          <EmptyBox text="Lengkapi tiket, negara, tanggal, dan jumlah box untuk melihat email." />
+        )}
+      </div>
+    </>
+  );
+}
+
 function EmptyBox({ text }: { text: string }) {
   return (
     <div className="px-5 py-10 rounded-xl border border-dashed border-[#1e1e1e]/15 text-center">
@@ -519,7 +893,9 @@ export function PickupCall() {
         ))}
       </div>
 
-      {tab === "chat" ? <ChatPickupTab /> : <EmailExportTab />}
+      {tab === "chat" && <ChatPickupTab />}
+      {tab === "export" && <EmailExportTab />}
+      {tab === "import" && <EmailImportTab />}
     </div>
   );
 }
